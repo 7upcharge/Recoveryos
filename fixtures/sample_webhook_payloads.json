@@ -1,0 +1,179 @@
+{
+  "payment_created": {
+    "entity": "event",
+    "account_id": "acc_TestAccount123",
+    "event": "payment.created",
+    "contains": ["payment"],
+    "id": "evt_TestPaymentCreated001",
+    "created_at": 1724300000,
+    "payload": {
+      "payment": {
+        "entity": {
+          "id": "pay_TestPay001",
+          "entity": "payment",
+          "amount": 50000,
+          "currency": "INR",
+          "status": "created",
+          "order_id": "order_TestOrder001",
+          "method": "upi",
+          "bank": null,
+          "description": "Test payment for order #001",
+          "international": false,
+          "email": "test@example.com",
+          "contact": "+919876543210",
+          "created_at": 1724300000
+        }
+      }
+    }
+  },
+  "payment_authorized": {
+    "entity": "event",
+    "account_id": "acc_TestAccount123",
+    "event": "payment.authorized",
+    "contains": ["payment"],
+    "id": "evt_TestPaymentAuth002",
+    "created_at": 1724300060,
+    "payload": {
+      "payment": {
+        "entity": {
+          "id": "pay_TestPay001",
+          "entity": "payment",
+          "amount": 50000,
+          "currency": "INR",
+          "status": "authorized",
+          "order_id": "order_TestOrder001",
+          "method": "upi",
+          "bank": null,
+          "description": "Test payment for order #001",
+          "international": false,
+          "email": "test@example.com",
+          "contact": "+919876543210",
+          "created_at": 1724300000
+        }
+      }
+    }
+  },
+  "payment_captured": {
+    "entity": "event",
+    "account_id": "acc_TestAccount123",
+    "event": "payment.captured",
+    "contains": ["payment"],
+    "id": "evt_TestPaymentCap003",
+    "created_at": 1724300120,
+    "payload": {
+      "payment": {
+        "entity": {
+          "id": "pay_TestPay001",
+          "entity": "payment",
+          "amount": 50000,
+          "currency": "INR",
+          "status": "captured",
+          "order_id": "order_TestOrder001",
+          "method": "upi",
+          "bank": null,
+          "description": "Test payment for order #001",
+          "international": false,
+          "email": "test@example.com",
+          "contact": "+919876543210",
+          "created_at": 1724300000
+        }
+      }
+    }
+  },
+  "payment_failed": {
+    "entity": "event",
+    "account_id": "acc_TestAccount123",
+    "event": "payment.failed",
+    "contains": ["payment"],
+    "id": "evt_TestPaymentFail004",
+    "created_at": 1724300180,
+    "payload": {
+      "payment": {
+        "entity": {
+          "id": "pay_TestPay002",
+          "entity": "payment",
+          "amount": 75000,
+          "currency": "INR",
+          "status": "failed",
+          "order_id": "order_TestOrder002",
+          "method": "netbanking",
+          "bank": "HDFC",
+          "description": "Test payment for order #002",
+          "error_code": "BAD_REQUEST_ERROR",
+          "error_description": "Payment was not completed on time.",
+          "international": false,
+          "email": "buyer@example.com",
+          "contact": "+919876543211",
+          "created_at": 1724300100
+        }
+      }
+    }
+  },
+  "order_paid": {
+    "entity": "event",
+    "account_id": "acc_TestAccount123",
+    "event": "order.paid",
+    "contains": ["payment", "order"],
+    "id": "evt_TestOrderPaid005",
+    "created_at": 1724300240,
+    "payload": {
+      "payment": {
+        "entity": {
+          "id": "pay_TestPay003",
+          "entity": "payment",
+          "amount": 120000,
+          "currency": "INR",
+          "status": "captured",
+          "order_id": "order_TestOrder003",
+          "method": "card",
+          "bank": "ICICI",
+          "description": "Premium subscription",
+          "international": false,
+          "email": "premium@example.com",
+          "contact": "+919876543212",
+          "created_at": 1724300200
+        }
+      },
+      "order": {
+        "entity": {
+          "id": "order_TestOrder003",
+          "entity": "order",
+          "amount": 120000,
+          "currency": "INR",
+          "status": "paid",
+          "receipt": "rcpt_test_003",
+          "created_at": 1724300100
+        }
+      }
+    }
+  },
+  "payment_failed_duplicate": {
+    "entity": "event",
+    "account_id": "acc_TestAccount123",
+    "event": "payment.failed",
+    "contains": ["payment"],
+    "id": "evt_TestPaymentFail004",
+    "created_at": 1724300180,
+    "payload": {
+      "payment": {
+        "entity": {
+          "id": "pay_TestPay002",
+          "entity": "payment",
+          "amount": 75000,
+          "currency": "INR",
+          "status": "failed",
+          "order_id": "order_TestOrder002",
+          "method": "netbanking",
+          "bank": "HDFC",
+          "description": "Test payment for order #002",
+          "error_code": "BAD_REQUEST_ERROR",
+          "error_description": "Payment was not completed on time.",
+          "international": false,
+          "email": "buyer@example.com",
+          "contact": "+919876543211",
+          "created_at": 1724300100
+        }
+      }
+    }
+  }
+}
