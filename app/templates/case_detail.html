@@ -166,7 +166,50 @@
 
     </div>
 
+    <!-- Proposed Action Card (shown only if a proposal exists) -->
+    {% if data.proposal %}
+      <div class="detail-card" style="margin-bottom: 24px; border: 1px solid rgba(56, 189, 248, 0.3);">
+        <div class="detail-card-title">
+          <span>Recovery Proposer Recommendation</span>
+          <span class="badge badge-rule" style="font-size: 12px; padding: 4px 10px;">{{ data.proposal.proposed_action }}</span>
+        </div>
+
+        <div class="kv-group">
+          <div class="kv-row">
+            <span class="kv-key">Proposed Action</span>
+            <span class="kv-val mono" style="font-weight: 700; color: #38BDF8; font-size: 15px;">{{ data.proposal.proposed_action }}</span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Proposal Status</span>
+            <span class="kv-val mono"><span class="badge badge-open" style="background: rgba(56, 189, 248, 0.15); border-color: #38BDF8; color: #38BDF8;">{{ data.proposal.status }}</span></span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Diagnosis Used</span>
+            <span class="kv-val mono">{{ data.proposal.diagnosis_used }} (conf={{ "%.2f"|format(data.proposal.diagnosis_confidence) }})</span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Fallback Used</span>
+            <span class="kv-val mono">
+              {% if data.proposal.fallback_used %}
+                <span style="color: #FCA5A5;">Yes ({{ data.proposal.fallback_reason }})</span>
+              {% else %}
+                <span style="color: #34D399;">No</span>
+              {% endif %}
+            </span>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Policy Rationale</div>
+          <div style="font-size: 13px; color: #E2E8F0; background: rgba(15, 23, 42, 0.5); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--card-border);">
+            {{ data.proposal.reason }}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
     <!-- Timeline & Audit Trail -->
+
     <div class="detail-grid">
       
       <!-- Timeline -->

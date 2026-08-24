@@ -66,3 +66,20 @@ CREATE TABLE IF NOT EXISTS diagnoses (
     fallback_reason TEXT
 );
 
+-- Day 4: Proposed actions table stored by Recovery Proposer.
+CREATE TABLE IF NOT EXISTS proposed_actions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    case_id INTEGER NOT NULL REFERENCES recovery_cases(id),
+    diagnosis_id INTEGER NOT NULL REFERENCES diagnoses(id),
+    proposed_action TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    diagnosis_used TEXT NOT NULL,
+    diagnosis_confidence REAL NOT NULL,
+    created_at TEXT NOT NULL,
+    model_name TEXT,
+    fallback_used INTEGER NOT NULL DEFAULT 0,
+    fallback_reason TEXT,
+    status TEXT NOT NULL DEFAULT 'PROPOSED'
+);
+
+

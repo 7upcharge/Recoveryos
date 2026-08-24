@@ -568,13 +568,88 @@ def get_case_detail_full(conn: sqlite3.Connection, case_id: int) -> dict[str, An
 
     audit_events = [dict(ar) for ar in audit_rows]
 
+    # Proposal
+    proposal_row = conn.execute(
+        "SELECT * FROM proposed_actions WHERE case_id = ? ORDER BY id DESC LIMIT 1",
+        (case_id,),
+    ).fetchone()
+    proposal_dict = dict(proposal_row) if proposal_row else None
+
     return {
         "case": case_dict,
         "payment": payment_dict,
         "diagnosis": diagnosis_dict,
+        "proposal": proposal_dict,
         "timeline": timeline_events,
         "audit_events": audit_events,
     }
+
+
+# ── Day 4: Proposed Actions Repository Functions ─────────────────────────────
+
+def get_active_proposal_for_case(
+    conn: sqlite3.Connection,
+    case_id: int,
+) -> dict[str, Any] | None:
+    """Fetch the latest proposal entry for a recovery case.
+
+    Args:
+        conn: Active database connection.
+        case_id: Case ID to query.
+
+    Returns:
+        Dict representing proposed_actions row if existing, or None.
+    """
+    row = conn.execute(
+        "SELECT * FROM proposed_actions WHERE case_id = ? ORDER BY id DESC LIMIT 1",
+        (case_id,),
+    ).fetchone()
+    return dict(row) if row else None
+
+
+def insert_proposed_action(
+    conn: sqlite3.Connection,
+    case_id: int,
+    diagnosis_id: int,
+    result: Any,  # ProposalResult
+    model_name: str | None = None,
+) -> int:
+    """Insert a proposed action entry into proposed_actions table with status='PROPOSED'.
+
+    Args:
+        conn: Active database connection.
+        case_id: Associated recovery_case ID.
+        diagnosis_id: Associated diagnosis ID.
+        result: ProposalResult dataclass object.
+        model_name: Optional model identifier string.
+
+    Returns:
+        The auto-incremented row ID of the inserted proposal.
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    cursor = conn.execute(
+        """
+        INSERT INTO proposed_actions
+            (case_id, diagnosis_id, proposed_action, reason, diagnosis_used,
+             diagnosis_confidence, created_at, model_name, fallback_used,
+             fallback_reason, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PROPOSED')
+        """,
+        (
+            case_id,
+            diagnosis_id,
+            result.action,
+            result.reason,
+            result.diagnosis_used,
+            result.diagnosis_confidence,
+            now,
+            model_name,
+            1 if result.fallback_used else 0,
+            result.fallback_reason,
+        ),
+    )
+    return cursor.lastrowid
+
 
 
 
