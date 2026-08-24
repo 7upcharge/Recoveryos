@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RecoveryOS — Developer Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <span class="logo-badge">RecoveryOS</span>
+      <span class="brand-title">Developer Dashboard</span>
+      <span class="brand-sub">AI Revenue Recovery System</span>
+    </div>
+    <div class="nav-status">
+      <span class="pulse-dot"></span>
+      <span>System Healthy</span>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- 1. Summary Cards Grid -->
+    <div class="summary-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Payments</div>
+        <div class="metric-value">{{ summary.total_payments }}</div>
+      </div>
+
+      <div class="metric-card accent-amber">
+        <div class="metric-label">Payments at Risk</div>
+        <div class="metric-value">{{ summary.payments_at_risk }}</div>
+      </div>
+
+      <div class="metric-card accent-amber">
+        <div class="metric-label">Open Cases</div>
+        <div class="metric-value">{{ summary.open_recovery_cases }}</div>
+      </div>
+
+      <div class="metric-card accent-green">
+        <div class="metric-label">Diagnosed Cases</div>
+        <div class="metric-value">{{ summary.diagnosed_cases }}</div>
+      </div>
+
+      <div class="metric-card accent-red">
+        <div class="metric-label">Total Value at Risk</div>
+        <div class="metric-value">₹{{ "%.2f"|format(summary.total_value_at_risk_paise / 100) }}</div>
+      </div>
+    </div>
+
+    <!-- 2. Recovery Cases Table -->
+    <div class="section-header">
+      <h2 class="section-title">
+        <span>Recovery Cases</span>
+      </h2>
+      <span class="mono" style="font-size: 12px; color: var(--text-dim);">Newest First</span>
+    </div>
+
+    <div class="card-table-wrapper">
+      {% if cases %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Case ID</th>
+              <th>Order ID</th>
+              <th>Payment ID</th>
+              <th>Amount</th>
+              <th>Risk Rule</th>
+              <th>Score</th>
+              <th>Diagnosis</th>
+              <th>Confidence</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in cases %}
+              <tr>
+                <td class="mono" style="font-weight: 600; color: #FFF;">#{{ c.case_id }}</td>
+                <td class="mono">{{ c.order_id or '-' }}</td>
+                <td class="mono">{{ c.payment_id }}</td>
+                <td class="mono" style="font-weight: 500;">₹{{ "%.2f"|format(c.amount / 100) }}</td>
+                <td>
+                  <span class="badge badge-rule">{{ c.risk_rule }}</span>
+                </td>
+                <td>
+                  <span class="badge badge-score">{{ c.risk_score }}</span>
+                </td>
+                <td>
+                  {% if c.likely_cause %}
+                    <span class="badge {% if c.likely_cause == 'UNKNOWN' %}badge-unknown{% else %}badge-rule{% endif %}">
+                      {{ c.likely_cause }}
+                    </span>
+                  {% else %}
+                    <span style="color: var(--text-dim);">-</span>
+                  {% endif %}
+                </td>
+                <td class="mono">
+                  {% if c.confidence is not none %}
+                    {{ "%.2f"|format(c.confidence) }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td>
+                  {% if c.case_status == 'open' %}
+                    <span class="badge badge-open">Open</span>
+                  {% elif c.case_status == 'diagnosed' %}
+                    <span class="badge badge-diagnosed">Diagnosed</span>
+                  {% else %}
+                    <span class="badge">{{ c.case_status }}</span>
+                  {% endif %}
+                </td>
+                <td class="mono" style="font-size: 11px; color: var(--text-muted);">
+                  {{ c.opened_at[:19].replace('T', ' ') }}
+                </td>
+                <td>
+                  <a href="{{ url_for('dashboard.case_detail', case_id=c.case_id) }}">View Details &rarr;</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">⚡</div>
+          <div class="empty-state-title">No recovery cases yet.</div>
+          <div class="empty-state-sub">
+            Run <code style="color: var(--accent-cyan);">python scripts/seed_demo_data.py</code> to populate synthetic demo cases.
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+</body>
+</html>

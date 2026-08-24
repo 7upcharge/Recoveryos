@@ -1,12 +1,11 @@
-"""Flask application factory for RecoveryOS."""
-
 import logging
-
+import os
 from flask import Flask, jsonify
 
 from app.config import load_config
 from app.db.database import init_db
 from app.webhooks.routes import webhook_bp
+from app.dashboard.routes import dashboard_bp
 
 
 def create_app(config_overrides: dict | None = None) -> Flask:
@@ -24,7 +23,15 @@ def create_app(config_overrides: dict | None = None) -> Flask:
         RuntimeError: If RAZORPAY_WEBHOOK_SECRET is not set and no
             override provides it.
     """
-    app = Flask(__name__)
+    app_dir = os.path.dirname(__file__)
+    template_dir = os.path.join(app_dir, "templates")
+    static_dir = os.path.join(app_dir, "static")
+
+    app = Flask(
+        __name__,
+        template_folder=template_dir,
+        static_folder=static_dir,
+    )
 
     # ── Load configuration ────────────────────────────────────────────
     if config_overrides and "RAZORPAY_WEBHOOK_SECRET" in config_overrides:
@@ -51,19 +58,22 @@ def create_app(config_overrides: dict | None = None) -> Flask:
     # ── Initialize database ───────────────────────────────────────────
     init_db(config["DATABASE_PATH"])
 
-    # ── Register blueprints & routes ──────────────────────────────────
+    # ── Register blueprints ───────────────────────────────────────────
     app.register_blueprint(webhook_bp)
+    app.register_blueprint(dashboard_bp)
 
-    @app.route("/", methods=["GET"])
-    def index():
+    @app.route("/api/health", methods=["GET"])
+    def api_health():
         return jsonify({
             "status": "healthy",
             "service": "RecoveryOS",
-            "version": "Day 3 (Gemini Diagnoser)",
+            "version": "Day 3 (Gemini Diagnoser & Developer Dashboard)",
             "endpoints": {
+                "dashboard": "/",
                 "webhooks": "/webhooks/razorpay"
             }
         }), 200
 
     return app
+
 

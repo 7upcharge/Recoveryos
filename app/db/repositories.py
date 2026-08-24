@@ -423,3 +423,158 @@ def update_case_status(
     )
 
 
+# ── Dashboard Query Helpers ──────────────────────────────────────────────────
+
+def get_dashboard_summary(conn: sqlite3.Connection) -> dict[str, Any]:
+    """Calculate summary metrics for the developer dashboard from live SQLite data.
+
+    Returns:
+        Dict with total_payments, payments_at_risk, open_recovery_cases,
+        diagnosed_cases, and total_value_at_risk_paise.
+    """
+    total_payments = conn.execute("SELECT COUNT(*) FROM payments").fetchone()[0]
+    payments_at_risk = conn.execute("SELECT COUNT(DISTINCT payment_id) FROM recovery_cases").fetchone()[0]
+    open_cases = conn.execute("SELECT COUNT(*) FROM recovery_cases WHERE status = 'open'").fetchone()[0]
+    diagnosed_cases = conn.execute("SELECT COUNT(*) FROM recovery_cases WHERE status = 'diagnosed'").fetchone()[0]
+    
+    val_row = conn.execute(
+        """
+        SELECT COALESCE(SUM(p.amount), 0)
+        FROM payments p
+        JOIN recovery_cases rc ON p.payment_id = rc.payment_id
+        WHERE rc.status IN ('open', 'diagnosed')
+        """
+    ).fetchone()
+    total_val_paise = val_row[0] if val_row else 0
+
+    return {
+        "total_payments": total_payments,
+        "payments_at_risk": payments_at_risk,
+        "open_recovery_cases": open_cases,
+        "diagnosed_cases": diagnosed_cases,
+        "total_value_at_risk_paise": total_val_paise,
+    }
+
+
+def get_all_recovery_cases_summary(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+    """Fetch all recovery cases with associated payment and latest diagnosis info.
+
+    Sorted newest cases first (id DESC).
+
+    Returns:
+        List of dicts containing case, payment, and diagnosis summary fields.
+    """
+    sql = """
+    SELECT 
+        rc.id AS case_id,
+        rc.payment_id,
+        COALESCE(p.order_id, '') AS order_id,
+        rc.risk_rule,
+        rc.risk_score,
+        rc.risk_reason,
+        rc.status AS case_status,
+        rc.opened_at,
+        COALESCE(p.amount, 0) AS amount,
+        COALESCE(p.currency, 'INR') AS currency,
+        d.likely_cause,
+        d.confidence
+    FROM recovery_cases rc
+    LEFT JOIN payments p ON rc.payment_id = p.payment_id
+    LEFT JOIN (
+        SELECT d1.* FROM diagnoses d1
+        INNER JOIN (
+            SELECT case_id, MAX(id) AS max_id FROM diagnoses GROUP BY case_id
+        ) d2 ON d1.id = d2.max_id
+    ) d ON rc.id = d.case_id
+    ORDER BY rc.id DESC
+    """
+    rows = conn.execute(sql).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_case_detail_full(conn: sqlite3.Connection, case_id: int) -> dict[str, Any] | None:
+    """Fetch complete detail payload for a single case including timeline and audit.
+
+    Returns:
+        Dict containing case, payment, diagnosis, timeline events, and audit trail, or None.
+    """
+    case_row = conn.execute("SELECT * FROM recovery_cases WHERE id = ?", (case_id,)).fetchone()
+    if not case_row:
+        return None
+
+    case_dict = dict(case_row)
+    payment_id = case_dict["payment_id"]
+
+    payment_row = conn.execute("SELECT * FROM payments WHERE payment_id = ?", (payment_id,)).fetchone()
+    payment_dict = dict(payment_row) if payment_row else {}
+
+    diagnosis_row = conn.execute(
+        "SELECT * FROM diagnoses WHERE case_id = ? ORDER BY id DESC LIMIT 1", (case_id,)
+    ).fetchone()
+    diagnosis_dict = dict(diagnosis_row) if diagnosis_row else None
+    if diagnosis_dict and diagnosis_dict.get("evidence_json"):
+        try:
+            diagnosis_dict["evidence"] = json.loads(diagnosis_dict["evidence_json"])
+        except Exception:
+            diagnosis_dict["evidence"] = []
+    elif diagnosis_dict:
+        diagnosis_dict["evidence"] = []
+
+    order_id = payment_dict.get("order_id") or ""
+    
+    # Timeline events from webhook_events
+    if order_id:
+        timeline_rows = conn.execute(
+            """
+            SELECT razorpay_event_id, event_type, payment_id, order_id, event_created_at, received_at, payload_json
+            FROM webhook_events
+            WHERE order_id = ? OR payment_id = ?
+            ORDER BY COALESCE(event_created_at, received_at) ASC
+            """,
+            (order_id, payment_id),
+        ).fetchall()
+    else:
+        timeline_rows = conn.execute(
+            """
+            SELECT razorpay_event_id, event_type, payment_id, order_id, event_created_at, received_at, payload_json
+            FROM webhook_events
+            WHERE payment_id = ?
+            ORDER BY COALESCE(event_created_at, received_at) ASC
+            """,
+            (payment_id,),
+        ).fetchall()
+
+    timeline_events = []
+    for tr in timeline_rows:
+        ts = tr["event_created_at"] or tr["received_at"]
+        timeline_events.append({
+            "event_id": tr["razorpay_event_id"],
+            "event_type": tr["event_type"],
+            "payment_id": tr["payment_id"],
+            "order_id": tr["order_id"],
+            "timestamp": ts,
+        })
+
+    # Audit events
+    case_pattern = f'%"case_id": {case_id}%'
+    audit_rows = conn.execute(
+        """
+        SELECT * FROM audit_events
+        WHERE case_id = ? OR detail_json LIKE ?
+        ORDER BY id ASC
+        """,
+        (case_id, case_pattern),
+    ).fetchall()
+
+    audit_events = [dict(ar) for ar in audit_rows]
+
+    return {
+        "case": case_dict,
+        "payment": payment_dict,
+        "diagnosis": diagnosis_dict,
+        "timeline": timeline_events,
+        "audit_events": audit_events,
+    }
+
+
+

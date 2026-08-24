@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case #{{ data.case.id }} — RecoveryOS Detail</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <span class="logo-badge">RecoveryOS</span>
+      <span class="brand-title">Case Detail</span>
+      <span class="brand-sub">Case #{{ data.case.id }}</span>
+    </div>
+    <div class="nav-status">
+      <a href="{{ url_for('dashboard.index') }}" class="back-link" style="margin-bottom:0;">&larr; Back to Dashboard</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <div>
+        <h1 style="font-size: 24px; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 12px;">
+          <span>Case #{{ data.case.id }}</span>
+          {% if data.case.status == 'open' %}
+            <span class="badge badge-open">Open</span>
+          {% elif data.case.status == 'diagnosed' %}
+            <span class="badge badge-diagnosed">Diagnosed</span>
+          {% else %}
+            <span class="badge">{{ data.case.status }}</span>
+          {% endif %}
+        </h1>
+        <div class="mono" style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">
+          Opened at: {{ data.case.opened_at[:19].replace('T', ' ') }}
+        </div>
+      </div>
+      <div>
+        <span class="badge badge-score" style="font-size: 14px; padding: 6px 12px;">Risk Score: {{ data.case.risk_score }}/100</span>
+      </div>
+    </div>
+
+    <!-- 2 Column Detail Grid -->
+    <div class="detail-grid">
+      
+      <!-- Payment & Risk Info -->
+      <div class="detail-card">
+        <div class="detail-card-title">
+          <span>Payment & Risk Overview</span>
+          <span class="badge badge-rule">{{ data.case.risk_rule }}</span>
+        </div>
+
+        <div class="kv-group">
+          <div class="kv-row">
+            <span class="kv-key">Payment Amount</span>
+            <span class="kv-val mono" style="color: #38BDF8; font-size: 16px;">
+              ₹{{ "%.2f"|format((data.payment.amount or 0) / 100) }} {{ data.payment.currency or 'INR' }}
+            </span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Order ID</span>
+            <span class="kv-val mono">{{ data.payment.order_id or '-' }}</span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Payment ID</span>
+            <span class="kv-val mono">{{ data.case.payment_id }}</span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Payment Status</span>
+            <span class="kv-val mono" style="text-transform: uppercase;">{{ data.payment.status or 'failed' }}</span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Payment Method / Bank</span>
+            <span class="kv-val mono">{{ data.payment.method or '-' }} / {{ data.payment.bank or '-' }}</span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Attempt Count</span>
+            <span class="kv-val mono">{{ data.payment.attempt_count or 1 }}</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--card-border);">
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Risk Explanation</div>
+          <div style="font-size: 13px; color: #E2E8F0; background: rgba(15, 23, 42, 0.5); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--card-border);">
+            {{ data.case.risk_reason }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Gemini Diagnosis -->
+      <div class="detail-card">
+        <div class="detail-card-title">
+          <span>Gemini AI Diagnosis</span>
+          {% if data.diagnosis %}
+            <span class="badge {% if data.diagnosis.likely_cause == 'UNKNOWN' %}badge-unknown{% else %}badge-diagnosed{% endif %}">
+              {{ data.diagnosis.likely_cause }}
+            </span>
+          {% else %}
+            <span class="badge badge-unknown">Pending</span>
+          {% endif %}
+        </div>
+
+        {% if data.diagnosis %}
+          <div class="kv-group">
+            <div class="kv-row">
+              <span class="kv-key">Likely Cause</span>
+              <span class="kv-val mono" style="font-weight: 700;">{{ data.diagnosis.likely_cause }}</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">Confidence Score</span>
+              <span class="kv-val mono">{{ "%.2f"|format(data.diagnosis.confidence) }}</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">Model Used</span>
+              <span class="kv-val mono">{{ data.diagnosis.model_name }}</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">Fallback Used</span>
+              <span class="kv-val mono">
+                {% if data.diagnosis.fallback_used %}
+                  <span style="color: #FCA5A5;">Yes ({{ data.diagnosis.fallback_reason }})</span>
+                {% else %}
+                  <span style="color: #34D399;">No</span>
+                {% endif %}
+              </span>
+            </div>
+          </div>
+
+          <div style="margin-top: 16px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Explanation</div>
+            <div style="font-size: 13px; color: #E2E8F0; background: rgba(15, 23, 42, 0.5); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--card-border);">
+              {{ data.diagnosis.explanation }}
+            </div>
+          </div>
+
+          {% if data.diagnosis.evidence %}
+            <div style="margin-top: 12px;">
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Evidence</div>
+              <ul style="font-size: 12px; color: var(--text-muted); padding-left: 20px;">
+                {% for ev in data.diagnosis.evidence %}
+                  <li>{{ ev }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if data.diagnosis.limitations %}
+            <div style="margin-top: 12px;">
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-dim); margin-bottom: 2px;">Limitations</div>
+              <div style="font-size: 11px; color: var(--text-dim); italic;">{{ data.diagnosis.limitations }}</div>
+            </div>
+          {% endif %}
+
+        {% else %}
+          <div class="empty-state" style="padding: 24px;">
+            <div class="empty-state-title">No diagnosis record found yet.</div>
+            <div class="empty-state-sub">
+              Run <code style="color: var(--accent-cyan);">python scripts/run_diagnoser_on_case.py {{ data.case.id }}</code> to generate diagnosis.
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Timeline & Audit Trail -->
+    <div class="detail-grid">
+      
+      <!-- Timeline -->
+      <div class="detail-card">
+        <div class="detail-card-title">
+          <span>Payment Event Timeline</span>
+          <span class="mono" style="font-size: 11px; color: var(--text-dim);">SQLite Webhook Events</span>
+        </div>
+
+        {% if data.timeline %}
+          <div class="timeline-wrapper">
+            {% for item in data.timeline %}
+              <div class="timeline-item {% if 'failed' in item.event_type %}failed{% elif 'authorized' in item.event_type or 'captured' in item.event_type %}authorized{% endif %}">
+                <div class="timeline-node"></div>
+                <div class="timeline-content">
+                  <div class="timeline-header">
+                    <span class="timeline-type mono">{{ item.event_type }}</span>
+                    <span class="timeline-time mono">{{ item.timestamp[:19].replace('T', ' ') if item.timestamp else '' }}</span>
+                  </div>
+                  <div class="mono" style="font-size: 11px; color: var(--text-dim);">
+                    Event ID: {{ item.event_id }} | Payment: {{ item.payment_id }}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state" style="padding: 20px;">
+            <div class="empty-state-sub">No webhook timeline events found for this order.</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Audit Trail -->
+      <div class="detail-card">
+        <div class="detail-card-title">
+          <span>Audit Log Trail</span>
+          <span class="mono" style="font-size: 11px; color: var(--text-dim);">Audit Events</span>
+        </div>
+
+        {% if data.audit_events %}
+          <div style="overflow-x: auto;">
+            <table class="data-table" style="font-size: 12px;">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Stage</th>
+                  <th>Actor</th>
+                  <th>Summary</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in data.audit_events %}
+                  <tr>
+                    <td class="mono" style="font-size: 10px; color: var(--text-dim);">
+                      {{ log.timestamp[:19].replace('T', ' ') }}
+                    </td>
+                    <td>
+                      <span class="badge badge-rule" style="font-size: 9px;">{{ log.stage }}</span>
+                    </td>
+                    <td class="mono" style="font-size: 11px;">{{ log.actor }}</td>
+                    <td style="font-size: 11px; color: var(--text-muted);">{{ log.summary }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state" style="padding: 20px;">
+            <div class="empty-state-sub">No audit trail entries for this case.</div>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>
