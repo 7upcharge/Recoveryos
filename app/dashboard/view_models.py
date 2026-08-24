@@ -7,8 +7,42 @@ Flask templates MUST NEVER execute raw SQL or ad-hoc query logic directly.
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from typing import Any
+
+
+def get_dev_mode_summary(conn: sqlite3.Connection) -> dict[str, Any]:
+    """Fetch test mode and developer tunnel telemetry for the dashboard.
+
+    Returns:
+        Dict containing public/local webhook endpoints, event telemetry, and verification status.
+    """
+    base_url = os.environ.get("PUBLIC_WEBHOOK_BASE_URL", "").strip()
+    if base_url:
+        public_url = f"{base_url.rstrip('/')}/webhooks/razorpay"
+    else:
+        public_url = "Not Configured (Set PUBLIC_WEBHOOK_BASE_URL in .env)"
+
+    total_webhooks = conn.execute("SELECT COUNT(*) FROM webhook_events").fetchone()[0] or 0
+
+    latest_row = conn.execute(
+        "SELECT event_type, received_at FROM webhook_events ORDER BY id DESC LIMIT 1"
+    ).fetchone()
+
+    latest_event_type = latest_row["event_type"] if latest_row else "None"
+    latest_event_at = latest_row["received_at"] if latest_row else "None"
+
+    return {
+        "mode": "TEST MODE (Development)",
+        "local_webhook_url": "http://localhost:5000/webhooks/razorpay",
+        "public_webhook_url": public_url,
+        "total_webhooks": total_webhooks,
+        "latest_event_type": latest_event_type,
+        "latest_event_at": latest_event_at,
+        "signature_verification_active": True,
+    }
+
 
 
 def compute_display_status(case_row: dict[str, Any], verification_row: dict[str, Any] | None = None) -> str:

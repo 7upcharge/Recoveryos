@@ -198,3 +198,27 @@ def test_honesty_rule_proposed_status_literal(client, seeded_db):
     # Ensure not marked with fake success/executed classes
     assert "action-executed" not in html
     assert "status-completed" not in html
+
+
+# ── Test 13: Dev Mode Panel & Webhook Endpoint Smoke Test ────────────────────
+
+def test_dev_mode_summary_rendering(client, seeded_db):
+    resp = client.get("/")
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+
+    assert "TEST MODE (Development)" in html
+    assert "X-Razorpay-Signature Active" in html
+    assert "Public Webhook URL" in html
+
+
+def test_webhook_endpoint_signature_rejection(client):
+    resp = client.post(
+        "/webhooks/razorpay",
+        data=b'{"entity":"event","event":"payment.failed"}',
+        content_type="application/json",
+    )
+    assert resp.status_code == 400
+    data = resp.get_json()
+    assert data["error"] == "Invalid signature"
+

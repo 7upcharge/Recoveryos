@@ -52,6 +52,32 @@
   </div>
 </div>
 
+<!-- Development / Test Mode Webhook Pipeline Card -->
+{% if dev_summary %}
+<div class="section-card" style="margin-bottom: 24px; border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.65);">
+  <div class="card-title-row" style="margin-bottom: 12px; padding-bottom: 8px;">
+    <span class="card-title-text" style="font-size: 14px; display: flex; align-items: center; gap: 8px;">
+      <span class="badge badge-risk" style="font-size: 10px;">{{ dev_summary.mode }}</span>
+      <span>Live Webhook Ingestion & Tunneling</span>
+    </span>
+    <span class="badge badge-approved" style="font-size: 10px;">X-Razorpay-Signature Active</span>
+  </div>
+
+  <div class="kv-pair">
+    <span class="kv-key">Public Webhook URL (Razorpay Dashboard)</span>
+    <span class="kv-val mono" style="color: var(--accent-cyan); font-weight: 600;">{{ dev_summary.public_webhook_url }}</span>
+  </div>
+  <div class="kv-pair">
+    <span class="kv-key">Local Webhook Endpoint</span>
+    <span class="kv-val mono">{{ dev_summary.local_webhook_url }}</span>
+  </div>
+  <div class="kv-pair">
+    <span class="kv-key">Total Webhooks Ingested</span>
+    <span class="kv-val mono">{{ dev_summary.total_webhooks }} (Latest: {{ dev_summary.latest_event_type }} at {{ dev_summary.latest_event_at[:19].replace('T', ' ') if dev_summary.latest_event_at != 'None' else '-' }})</span>
+  </div>
+</div>
+{% endif %}
+
 <!-- 2. 6-Stage Horizontal Pipeline Visualization -->
 <div class="pipeline-section">
   <div class="section-title-sm">

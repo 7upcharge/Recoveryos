@@ -13,6 +13,7 @@ from app.dashboard.view_models import (
     get_audit_trail,
     get_case_detail,
     get_cases_table_rows,
+    get_dev_mode_summary,
     get_hero_metrics,
     get_organic_vs_assisted_summary,
     get_pipeline_counts,
@@ -33,12 +34,14 @@ def index():
         pipeline = get_pipeline_counts(conn)
         cases = get_cases_table_rows(conn)
         organic_summary = get_organic_vs_assisted_summary(conn)
+        dev_summary = get_dev_mode_summary(conn)
         return render_template(
             "overview.html",
             metrics=metrics,
             pipeline=pipeline,
             cases=cases,
             organic_summary=organic_summary,
+            dev_summary=dev_summary,
         )
     finally:
         conn.close()
