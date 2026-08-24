@@ -6,9 +6,13 @@ database state. This makes tests trivially isolatable with temp databases.
 Uses parameterized queries exclusively to prevent SQL injection.
 """
 
+from __future__ import annotations
+
 import json
 import sqlite3
 from datetime import datetime, timezone
+from typing import Any
+
 
 
 def is_duplicate_event(conn: sqlite3.Connection, razorpay_event_id: str) -> bool:

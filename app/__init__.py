@@ -2,7 +2,7 @@
 
 import logging
 
-from flask import Flask
+from flask import Flask, jsonify
 
 from app.config import load_config
 from app.db.database import init_db
@@ -51,7 +51,19 @@ def create_app(config_overrides: dict | None = None) -> Flask:
     # ── Initialize database ───────────────────────────────────────────
     init_db(config["DATABASE_PATH"])
 
-    # ── Register blueprints ───────────────────────────────────────────
+    # ── Register blueprints & routes ──────────────────────────────────
     app.register_blueprint(webhook_bp)
 
+    @app.route("/", methods=["GET"])
+    def index():
+        return jsonify({
+            "status": "healthy",
+            "service": "RecoveryOS",
+            "version": "Day 3 (Gemini Diagnoser)",
+            "endpoints": {
+                "webhooks": "/webhooks/razorpay"
+            }
+        }), 200
+
     return app
+
