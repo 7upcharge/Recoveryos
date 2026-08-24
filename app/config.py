@@ -22,8 +22,14 @@ def load_config():
             "Set this variable in your .env file or environment."
         )
 
+    # On Vercel (serverless), only /tmp is writable. Detect via VERCEL env var.
+    if os.environ.get("VERCEL"):
+        default_db_path = "/tmp/recoveryos.db"
+    else:
+        default_db_path = "./recoveryos.db"
+
     return {
         "RAZORPAY_WEBHOOK_SECRET": secret,
-        "DATABASE_PATH": os.environ.get("DATABASE_PATH", "./recoveryos.db"),
-        "FLASK_ENV": os.environ.get("FLASK_ENV", "development"),
+        "DATABASE_PATH": os.environ.get("DATABASE_PATH", default_db_path),
+        "FLASK_ENV": os.environ.get("FLASK_ENV", "production"),
     }
