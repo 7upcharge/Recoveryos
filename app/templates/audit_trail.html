@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% set active_page = 'audit' %}
+
+{% block title %}Audit Trail — RecoveryOS Control Center{% endblock %}
+
+{% block content %}
+
+<div class="table-card">
+  <div class="table-header">
+    <div>
+      <span class="card-title-text" style="font-size: 18px;">Audit & Activity Trail</span>
+      <span class="mono" style="font-size: 12px; color: var(--text-dim); margin-left: 12px;">Chronological Event History</span>
+    </div>
+  </div>
+
+  {% if audit_events %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Timestamp</th>
+          <th>Case ID</th>
+          <th>Stage</th>
+          <th>Actor</th>
+          <th>Summary</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in audit_events %}
+          <tr>
+            <td class="mono" style="color: var(--text-dim);">#{{ log.id }}</td>
+            <td class="mono" style="font-size: 11px; color: var(--text-dim);">
+              {{ log.timestamp[:19].replace('T', ' ') if log.timestamp else '-' }}
+            </td>
+            <td class="mono">
+              {% if log.case_id %}
+                <a href="{{ url_for('dashboard.case_detail_view', case_id=log.case_id) }}">#{{ log.case_id }}</a>
+              {% else %}
+                <span style="color: var(--text-dim);">-</span>
+              {% endif %}
+            </td>
+            <td><span class="badge badge-neutral" style="font-size: 10px;">{{ log.stage }}</span></td>
+            <td class="mono" style="font-size: 11px;">{{ log.actor }}</td>
+            <td style="font-size: 12px;">{{ log.summary }}</td>
+            <td class="mono" style="font-size: 10px; color: var(--text-dim); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ log.detail_json if log.detail_json else '-' }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-title">No audit trail entries in database.</div>
+      <div class="empty-sub">Run <code style="color: var(--accent-cyan);">python scripts/seed_demo.py --reset</code> to generate pipeline audit events.</div>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

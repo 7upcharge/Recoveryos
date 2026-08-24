@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% set active_page = 'cases' %}
+
+{% block title %}Cases — RecoveryOS Control Center{% endblock %}
+
+{% block content %}
+
+<div class="table-card">
+  <div class="table-header">
+    <div>
+      <span class="card-title-text" style="font-size: 18px;">Recovery Cases</span>
+      <span class="mono" style="font-size: 12px; color: var(--text-dim); margin-left: 12px;">Total: {{ cases|length }}</span>
+    </div>
+    <div>
+      <input type="text" id="tableSearchInput" class="search-input" placeholder="Search order ID, rule, status...">
+    </div>
+  </div>
+
+  {% if cases %}
+    <table class="data-table" id="casesTable">
+      <thead>
+        <tr>
+          <th>Case ID</th>
+          <th>Amount</th>
+          <th>Order ID</th>
+          <th>Risk Rule</th>
+          <th>Risk Score</th>
+          <th>Diagnosis</th>
+          <th>Confidence</th>
+          <th>Proposed Action</th>
+          <th>Verification Decision</th>
+          <th>Case Status</th>
+          <th>Created Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in cases %}
+          <tr style="cursor: pointer;" onclick="window.location='{{ url_for('dashboard.case_detail_view', case_id=row.case_id) }}'">
+            <td class="mono" style="font-weight: 700; color: #FFF;">#{{ row.case_id }}</td>
+            <td class="mono" style="color: var(--accent-cyan); font-weight: 600;">₹{{ "%.2f"|format(row.amount_inr) }}</td>
+            <td class="mono">{{ row.order_id }}</td>
+            <td><span class="badge badge-neutral" style="font-size: 10px;">{{ row.risk_rule }}</span></td>
+            <td class="mono"><span class="badge badge-neutral">{{ row.risk_score }}</span></td>
+            <td>
+              {% if row.diagnosis and row.diagnosis != '-' %}
+                <span class="badge {% if row.diagnosis == 'UNKNOWN' %}badge-neutral{% else %}badge-diagnosed{% endif %}" style="font-size: 10px;">
+                  {{ row.diagnosis }}
+                </span>
+              {% else %}
+                <span class="mono" style="color: var(--text-dim);">-</span>
+              {% endif %}
+            </td>
+            <td class="mono">
+              {% if row.confidence is not none %}
+                {{ "%.2f"|format(row.confidence) }}
+              {% else %}
+                <span style="color: var(--text-dim);">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if row.proposed_action and row.proposed_action != '-' %}
+                <span class="badge badge-proposed" style="font-size: 10px;">{{ row.proposed_action }}</span>
+              {% else %}
+                <span class="mono" style="color: var(--text-dim);">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if row.verification_decision == 'APPROVED' %}
+                <span class="badge badge-approved">APPROVED</span>
+              {% elif row.verification_decision == 'BLOCKED' %}
+                <span class="badge badge-blocked">BLOCKED</span>
+              {% else %}
+                <span class="mono" style="color: var(--text-dim);">-</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge {% if row.display_status == 'APPROVED' %}badge-approved{% elif row.display_status == 'BLOCKED' %}badge-blocked{% elif row.display_status == 'PROPOSED' %}badge-proposed{% elif row.display_status == 'DIAGNOSED' %}badge-diagnosed{% else %}badge-risk{% endif %}">
+                {{ row.display_status }}
+              </span>
+            </td>
+            <td class="mono" style="font-size: 11px; color: var(--text-dim);">
+              {{ row.opened_at[:19].replace('T', ' ') if row.opened_at else '-' }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-title">No recovery cases found.</div>
+      <div class="empty-sub">Run <code style="color: var(--accent-cyan);">python scripts/seed_demo.py --reset</code> to populate synthetic demo cases.</div>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -82,4 +82,17 @@ CREATE TABLE IF NOT EXISTS proposed_actions (
     status TEXT NOT NULL DEFAULT 'PROPOSED'
 );
 
+-- Day 5/6: Verification decisions table stored by Deterministic Verifier.
+CREATE TABLE IF NOT EXISTS verification_decisions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    case_id INTEGER NOT NULL REFERENCES recovery_cases(id),
+    proposal_id INTEGER NOT NULL REFERENCES proposed_actions(id),
+    decision TEXT NOT NULL, -- 'approved' or 'blocked'
+    reason TEXT NOT NULL,
+    verified_at TEXT NOT NULL,
+    policies_checked TEXT,
+    stopping_rules TEXT
+);
+
+
 

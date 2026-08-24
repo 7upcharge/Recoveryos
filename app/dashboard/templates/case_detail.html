@@ -23,7 +23,7 @@
   </div>
 </div>
 
-<!-- Grid for Section 1 (Payment) & Section 3 (Risk) -->
+<!-- Grid for Section 1 (Payment) & Section 2 (Timeline) & Section 3 (Risk) -->
 <div class="detail-grid-2">
 
   <!-- Section 1: Payment Info -->
@@ -281,7 +281,7 @@
         {% for log in data.audit_events %}
           <tr>
             <td class="mono" style="font-size: 11px; color: var(--text-dim);">
-              {{ log.timestamp[:19].replace('T', ' ') if log.timestamp else '-' }}
+              {{ log.timestamp[:19].replace('T', ' ') }}
             </td>
             <td><span class="badge badge-neutral" style="font-size: 9px;">{{ log.stage }}</span></td>
             <td class="mono" style="font-size: 11px;">{{ log.actor }}</td>
