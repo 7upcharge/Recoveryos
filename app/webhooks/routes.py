@@ -27,6 +27,7 @@ from app.db.repositories import (
     is_duplicate_event,
     upsert_payment,
 )
+from app.core.risk_detector import process_order_for_risk
 from app.webhooks.signature import verify_signature
 
 logger = logging.getLogger(__name__)
@@ -192,6 +193,13 @@ def razorpay_webhook():
                 summary=f"Received webhook: {event_type} for payment {payment_id}",
                 detail_json=json.dumps(detail),
             )
+
+            # ── Day 2: Risk Detection ─────────────────────────────────
+            # After ingestion completes, evaluate the order's full event
+            # history for risk signals. Case creation and audit logging
+            # are handled internally by process_order_for_risk.
+            if order_id:
+                process_order_for_risk(conn, order_id)
 
             conn.commit()
 

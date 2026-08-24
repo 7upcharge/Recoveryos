@@ -190,3 +190,126 @@ def insert_audit_event(
         (case_id, now, stage, actor, summary, detail_json),
     )
     return cursor.lastrowid
+
+
+# ── Day 2: Recovery Cases & Event History ────────────────────────────────────
+
+def get_event_history_for_order(
+    conn: sqlite3.Connection,
+    order_id: str,
+) -> list:
+    """Query webhook_events for all rows matching the order.
+
+    Parses payload_json, maps into NormalizedEvent objects, and returns
+    them sorted by timestamp ascending. This is the bridge between stored
+    raw JSON and the pure-logic detector's input type.
+
+    Args:
+        conn: Active database connection.
+        order_id: Razorpay order ID to fetch events for.
+
+    Returns:
+        List of NormalizedEvent objects sorted by timestamp ascending.
+    """
+    from app.core.risk_detector import NormalizedEvent
+
+    rows = conn.execute(
+        """
+        SELECT event_type, payment_id, order_id, payload_json, event_created_at, received_at
+        FROM webhook_events
+        WHERE order_id = ?
+        ORDER BY COALESCE(event_created_at, received_at) ASC
+        """,
+        (order_id,),
+    ).fetchall()
+
+    events = []
+    for row in rows:
+        # Parse timestamp: prefer event_created_at (Razorpay's timestamp),
+        # fall back to received_at (our ingestion timestamp).
+        raw_ts = row["event_created_at"] or row["received_at"]
+        try:
+            # Razorpay sends created_at as Unix timestamp (stored as string).
+            ts = datetime.fromtimestamp(int(raw_ts), tz=timezone.utc)
+        except (ValueError, TypeError):
+            # If it's already an ISO string (e.g. from received_at).
+            try:
+                ts = datetime.fromisoformat(raw_ts)
+                if ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=timezone.utc)
+            except (ValueError, TypeError):
+                ts = datetime.now(timezone.utc)
+
+        # Extract error_code from payload if present.
+        error_code = None
+        try:
+            payload = json.loads(row["payload_json"])
+            payment_entity = payload.get("payload", {}).get("payment", {}).get("entity", {})
+            error_code = payment_entity.get("error_code")
+        except (json.JSONDecodeError, AttributeError):
+            pass
+
+        events.append(NormalizedEvent(
+            event_type=row["event_type"],
+            payment_id=row["payment_id"] or "",
+            order_id=row["order_id"] or order_id,
+            timestamp=ts,
+            error_code=error_code,
+        ))
+
+    return events
+
+
+def get_open_case_for_payment(
+    conn: sqlite3.Connection,
+    payment_id: str,
+) -> dict | None:
+    """Return an existing recovery_cases row with status='open' for this payment.
+
+    Used for idempotency — prevents opening duplicate recovery cases for
+    the same active condition.
+
+    Args:
+        conn: Active database connection.
+        payment_id: Razorpay payment ID to check.
+
+    Returns:
+        A dict-like Row if an open case exists, None otherwise.
+    """
+    row = conn.execute(
+        "SELECT * FROM recovery_cases WHERE payment_id = ? AND status = 'open'",
+        (payment_id,),
+    ).fetchone()
+    return dict(row) if row else None
+
+
+def insert_recovery_case(
+    conn: sqlite3.Connection,
+    payment_id: str,
+    risk_rule: str,
+    risk_score: int,
+    risk_reason: str,
+) -> int:
+    """Insert a new recovery case and return its ID.
+
+    Args:
+        conn: Active database connection.
+        payment_id: Razorpay payment ID that triggered the case.
+        risk_rule: Comma-joined list of fired rules.
+        risk_score: Combined risk score (0-100).
+        risk_reason: Human-readable explanation of why the case was opened.
+
+    Returns:
+        The auto-incremented row ID of the new case.
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    cursor = conn.execute(
+        """
+        INSERT INTO recovery_cases
+            (payment_id, opened_at, risk_rule, risk_score, risk_reason, status)
+        VALUES (?, ?, ?, ?, ?, 'open')
+        """,
+        (payment_id, now, risk_rule, risk_score, risk_reason),
+    )
+    return cursor.lastrowid
+

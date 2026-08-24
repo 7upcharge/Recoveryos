@@ -36,3 +36,16 @@ CREATE TABLE IF NOT EXISTS audit_events (
     summary TEXT NOT NULL,
     detail_json TEXT
 );
+
+-- Day 2: Recovery cases opened by the Risk Detector.
+-- risk_rule stores comma-joined list of fired rules (e.g. "R1_DELAYED_AUTH,R3_REPEATED_FAILURES").
+CREATE TABLE IF NOT EXISTS recovery_cases (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    payment_id TEXT NOT NULL REFERENCES payments(payment_id),
+    opened_at TEXT NOT NULL,
+    risk_rule TEXT NOT NULL,
+    risk_score INTEGER NOT NULL,
+    risk_reason TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open',
+    closed_at TEXT
+);
