@@ -3,32 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}RecoveryOS — Operations Control Center{% endblock %}</title>
+  <title>{% block title %}RecoveryOS — Revenue Recovery Intelligence{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/control-center.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- Top App Navigation -->
+  <!-- Global Top Navigation -->
   <header class="app-header">
     <div class="brand-section">
       <span class="brand-logo">RecoveryOS</span>
-      <span class="brand-title">Control Center</span>
-      <span class="brand-sub">AI Revenue Recovery System</span>
+      <span class="brand-title">Revenue Recovery Intelligence</span>
+      <span class="brand-sub">Fintech Operations</span>
     </div>
 
     <nav class="nav-links">
       <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if active_page == 'overview' %}active{% endif %}">Dashboard</a>
       <a href="{{ url_for('dashboard.cases') }}" class="nav-item {% if active_page == 'cases' %}active{% endif %}">Cases</a>
-      <a href="{{ url_for('dashboard.audit') }}" class="nav-item {% if active_page == 'audit' %}active{% endif %}">Audit / Activity</a>
+      <a href="{{ url_for('dashboard.audit') }}" class="nav-item {% if active_page == 'audit' %}active{% endif %}">Audit</a>
     </nav>
 
     <div class="system-status">
-      <span class="pulse-dot"></span>
-      <span>Pipeline Active</span>
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--accent-green); font-weight: 600;">
+        <span class="pulse-dot"></span>
+        <span>Pipeline Active</span>
+      </div>
+      <span class="badge badge-risk" style="font-size: 10px; opacity: 0.85;">TEST MODE</span>
     </div>
   </header>
 
-  <!-- Page Content Container -->
+  <!-- Main Content Container -->
   <main class="container">
     {% block content %}{% endblock %}
   </main>

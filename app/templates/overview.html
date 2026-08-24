@@ -1,60 +1,63 @@
 {% extends "base.html" %}
 {% set active_page = 'overview' %}
 
-{% block title %}Dashboard — RecoveryOS Control Center{% endblock %}
+{% block title %}Dashboard — RecoveryOS Revenue Recovery Intelligence{% endblock %}
 
 {% block content %}
 
-<!-- 1. Hero Metrics Row -->
+<!-- 1. Hero Impact Banner -->
 <div class="hero-grid">
-  <div class="hero-card accent-cyan">
-    <div class="hero-label">Total Payments</div>
-    <div class="hero-value">{{ metrics.payments_processed }}</div>
-    <div class="hero-sub">SQLite Ingested</div>
-  </div>
-
-  <div class="hero-card accent-amber">
-    <div class="hero-label">Revenue at Risk</div>
-    <div class="hero-value">₹{{ "%.2f"|format(metrics.revenue_at_risk) }}</div>
-    <div class="hero-sub">Active Unresolved Cases</div>
-  </div>
-
-  <div class="hero-card accent-amber">
-    <div class="hero-label">Open Cases</div>
-    <div class="hero-value">{{ metrics.open_cases }}</div>
-    <div class="hero-sub">Risk Detector Flagged</div>
-  </div>
-
-  <div class="hero-card accent-cyan">
-    <div class="hero-label">Diagnosed Cases</div>
-    <div class="hero-value">{{ metrics.diagnosed_cases }}</div>
-    <div class="hero-sub">Gemini Classified</div>
-  </div>
-
-  <div class="hero-card accent-purple">
-    <div class="hero-label">Proposed Actions</div>
-    <div class="hero-value">{{ metrics.proposed_actions_count }}</div>
-    <div class="hero-sub">Bounded Policy Engine</div>
-  </div>
-
-  <div class="hero-card accent-green">
-    <div class="hero-label">Verified Actions</div>
-    <div class="hero-value">{{ metrics.verified_actions_count }}</div>
-    <div class="hero-sub" style="color: var(--accent-green);">
-      {{ metrics.approved_actions_count }} Approved / {{ metrics.blocked_actions_count }} Blocked
+  <!-- Primary Metric: ₹ RECOVERED (Strongest Visual Emphasis) -->
+  <div class="hero-card hero-card-primary">
+    <div>
+      <div class="hero-label" style="color: var(--accent-green);">₹ RECOVERED</div>
+      <div class="hero-value-lg">₹{{ "%.2f"|format(metrics.recovered_amount) }}</div>
+    </div>
+    <div class="hero-sub" style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">
+      RecoveryOS-assisted revenue
     </div>
   </div>
 
-  <div class="hero-card accent-indigo">
-    <div class="hero-label">₹ Recovered</div>
-    <div class="hero-value">₹0.00</div>
-    <div class="hero-sub" style="font-size: 10px; color: var(--text-dim);">Execution stage pending</div>
+  <!-- Secondary Metric 1: REVENUE AT RISK -->
+  <div class="hero-card">
+    <div>
+      <div class="hero-label">REVENUE AT RISK</div>
+      <div class="hero-value" style="color: var(--accent-amber);">₹{{ "%.2f"|format(metrics.revenue_at_risk) }}</div>
+    </div>
+    <div class="hero-sub">Active unresolved cases</div>
+  </div>
+
+  <!-- Secondary Metric 2: AT-RISK PAYMENTS -->
+  <div class="hero-card">
+    <div>
+      <div class="hero-label">AT-RISK PAYMENTS</div>
+      <div class="hero-value">{{ metrics.payments_processed }}</div>
+    </div>
+    <div class="hero-sub">Total payments ingested</div>
+  </div>
+
+  <!-- Secondary Metric 3: OPEN CASES -->
+  <div class="hero-card">
+    <div>
+      <div class="hero-label">OPEN CASES</div>
+      <div class="hero-value" style="color: var(--accent-cyan);">{{ metrics.open_cases }}</div>
+    </div>
+    <div class="hero-sub">Active risk evaluations</div>
+  </div>
+
+  <!-- Secondary Metric 4: VERIFIED ACTIONS -->
+  <div class="hero-card">
+    <div>
+      <div class="hero-label">VERIFIED ACTIONS</div>
+      <div class="hero-value" style="color: var(--accent-indigo);">{{ metrics.verified_actions_count }}</div>
+    </div>
+    <div class="hero-sub">{{ metrics.approved_actions_count }} approved / {{ metrics.blocked_actions_count }} blocked</div>
   </div>
 </div>
 
 <!-- Development / Test Mode Webhook Pipeline Card -->
 {% if dev_summary %}
-<div class="section-card" style="margin-bottom: 24px; border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.65);">
+<div class="section-card" style="margin-bottom: 28px; border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.65);">
   <div class="card-title-row" style="margin-bottom: 12px; padding-bottom: 8px;">
     <span class="card-title-text" style="font-size: 14px; display: flex; align-items: center; gap: 8px;">
       <span class="badge badge-risk" style="font-size: 10px;">{{ dev_summary.mode }}</span>
@@ -78,122 +81,201 @@
 </div>
 {% endif %}
 
-<!-- 2. 6-Stage Horizontal Pipeline Visualization -->
+<!-- 2. 6-Stage Horizontal Recovery Pipeline -->
 <div class="pipeline-section">
   <div class="section-title-sm">
-    <span>Stage Pipeline Flow</span>
-    <span class="mono" style="font-size: 11px; color: var(--text-dim);">Real DB Counts</span>
+    <span>6-Stage Revenue Pipeline Flow</span>
+    <span style="font-size: 11px; color: var(--text-dim); text-transform: none; font-weight: 500;">Exact Database Row Counts</span>
   </div>
 
   <div class="pipeline-flow">
+    <!-- Stage 1: PAYMENTS -->
     <div class="pipeline-stage">
       <div class="pipeline-stage-num">{{ pipeline.payments }}</div>
-      <div class="pipeline-stage-name">1. Payments</div>
+      <div class="pipeline-stage-name">PAYMENTS</div>
       <span class="pipeline-arrow">&rarr;</span>
     </div>
 
+    <!-- Stage 2: AT RISK -->
     <div class="pipeline-stage">
       <div class="pipeline-stage-num" style="color: var(--accent-amber);">{{ pipeline.at_risk }}</div>
-      <div class="pipeline-stage-name">2. At Risk</div>
+      <div class="pipeline-stage-name">AT RISK</div>
       <span class="pipeline-arrow">&rarr;</span>
     </div>
 
+    <!-- Stage 3: DIAGNOSED -->
     <div class="pipeline-stage">
       <div class="pipeline-stage-num" style="color: var(--accent-cyan);">{{ pipeline.diagnosed }}</div>
-      <div class="pipeline-stage-name">3. Diagnosed</div>
+      <div class="pipeline-stage-name">DIAGNOSED</div>
       <span class="pipeline-arrow">&rarr;</span>
     </div>
 
+    <!-- Stage 4: PROPOSED -->
     <div class="pipeline-stage">
-      <div class="pipeline-stage-num" style="color: var(--accent-purple);">{{ pipeline.proposed }}</div>
-      <div class="pipeline-stage-name">4. Proposed</div>
+      <div class="pipeline-stage-num" style="color: var(--accent-violet);">{{ pipeline.proposed }}</div>
+      <div class="pipeline-stage-name">PROPOSED</div>
       <span class="pipeline-arrow">&rarr;</span>
     </div>
 
+    <!-- Stage 5: VERIFIED -->
     <div class="pipeline-stage">
       <div class="pipeline-stage-num" style="color: var(--accent-green);">{{ pipeline.verified }}</div>
-      <div class="pipeline-stage-name">5. Verified</div>
+      <div class="pipeline-stage-name">VERIFIED</div>
       <span class="pipeline-arrow">&rarr;</span>
     </div>
 
+    <!-- Stage 6: RECOVERED -->
     <div class="pipeline-stage pending">
       <div class="pipeline-stage-num" style="color: var(--text-dim);">{{ pipeline.recovered }}</div>
-      <div class="pipeline-stage-name">6. Recovered</div>
+      <div class="pipeline-stage-name">RECOVERED</div>
     </div>
   </div>
 </div>
 
-<!-- 3. Organic vs. Assisted Recovery Breakdown -->
-<div class="hero-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
-  <div class="hero-card">
-    <div class="hero-label">Organic Recovery Signal (R2)</div>
-    <div class="hero-value" style="color: var(--accent-green);">{{ organic_summary.organic_count }} Cases</div>
-    <div class="hero-sub">₹{{ "%.2f"|format(organic_summary.organic_amount) }} INR — Auto-resolved by customer without system action</div>
+<!-- 3. Revenue at Risk & Failure Insights Row -->
+<div class="detail-grid-2">
+
+  <!-- Revenue At Risk Explanation Card -->
+  <div class="section-card">
+    <div class="card-title-row">
+      <span class="card-title-text">Revenue At Risk Breakdown</span>
+      <span class="badge badge-risk">₹{{ "%.2f"|format(metrics.revenue_at_risk) }}</span>
+    </div>
+
+    <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px;">
+      Value associated with active recovery cases currently under evaluation by RecoveryOS risk detector and diagnoser.
+    </div>
+
+    <div class="kv-pair">
+      <span class="kv-key">Active Recovery Cases</span>
+      <span class="kv-val mono">{{ metrics.open_cases + metrics.diagnosed_cases }}</span>
+    </div>
+    <div class="kv-pair">
+      <span class="kv-key">Deterministic Risk Scope</span>
+      <span class="kv-val mono">R1 — R4 Threshold Rules</span>
+    </div>
+    <div class="kv-pair">
+      <span class="kv-key">Financial Assessment</span>
+      <span class="kv-val mono" style="color: var(--text-dim);">Value associated with active recovery cases</span>
+    </div>
   </div>
 
-  <div class="hero-card">
-    <div class="hero-label">RecoveryOS-Assisted Recovery</div>
-    <div class="hero-value" style="color: var(--text-dim);">₹0.00</div>
-    <div class="hero-sub">0 Cases — Execution module pending implementation</div>
+  <!-- Failure / Diagnosis Insights Card -->
+  <div class="section-card">
+    <div class="card-title-row">
+      <span class="card-title-text">Failure & Diagnosis Insights</span>
+      <span class="badge badge-ai-attribution">AI Classified</span>
+    </div>
+
+    {% if diagnosis_insights %}
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 8px;">
+        {% for item in diagnosis_insights %}
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span class="mono" style="font-weight: 700; color: #DDD6FE;">{{ item.category }}</span>
+              <span class="mono" style="color: var(--text-dim);">{{ item.count }} cases ({{ item.pct }}%)</span>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.08); height: 8px; border-radius: 4px; overflow: hidden;">
+              <div style="background: var(--accent-violet); height: 100%; width: {{ item.pct }}%; border-radius: 4px;"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding: 24px;">
+        <div class="empty-title">No diagnosis insights available yet.</div>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- 4. Organic vs. Assisted Recovery Distinction Card -->
+<div class="section-card" style="border: 1px solid rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.03);">
+  <div class="card-title-row">
+    <span class="card-title-text" style="display: flex; align-items: center; gap: 8px;">
+      <span class="badge badge-approved" style="font-size: 10px;">Honesty Distinction</span>
+      <span>Organic vs. RecoveryOS-Assisted Recovery</span>
+    </span>
+  </div>
+
+  <div class="detail-grid-2" style="margin-bottom: 0;">
+    <div>
+      <div class="kv-pair">
+        <span class="kv-key">Organic Recovery (Customer Retried Independently — R2)</span>
+        <span class="kv-val mono" style="color: var(--accent-green);">{{ organic_summary.organic_count }} cases (₹{{ "%.2f"|format(organic_summary.organic_amount) }})</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">
+        Signal detected when customer succeeds after initial failure without bot intervention.
+      </div>
+    </div>
+    <div>
+      <div class="kv-pair">
+        <span class="kv-key">RecoveryOS-Assisted Recovery</span>
+        <span class="kv-val mono" style="color: var(--text-dim);">₹0.00 (Execution stage pending)</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">
+        Revenue generated specifically via verified automated recovery actions.
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- 4. Recent Cases Table Preview -->
+<!-- 5. Recent Recovery Cases Table -->
 <div class="table-card">
   <div class="table-header">
     <span class="card-title-text">Recent Recovery Cases</span>
-    <a href="{{ url_for('dashboard.cases') }}" style="color: var(--accent-cyan); text-decoration: none; font-size: 12px; font-weight: 600;">View All Cases &rarr;</a>
+    <a href="{{ url_for('dashboard.cases') }}" class="nav-item" style="font-size: 12px;">View All Cases &rarr;</a>
   </div>
 
   {% if cases %}
     <table class="data-table">
       <thead>
         <tr>
-          <th>Case ID</th>
-          <th>Order ID</th>
+          <th>Case</th>
           <th>Amount</th>
-          <th>Risk Rule</th>
-          <th>Score</th>
+          <th>Risk</th>
           <th>Diagnosis</th>
           <th>Proposed Action</th>
           <th>Verification</th>
           <th>Status</th>
-          <th>Action</th>
+          <th>Time</th>
         </tr>
       </thead>
       <tbody>
-        {% for row in cases[:5] %}
+        {% for c in cases[:6] %}
           <tr>
-            <td class="mono" style="font-weight: 700; color: #FFF;">#{{ row.case_id }}</td>
-            <td class="mono">{{ row.order_id }}</td>
-            <td class="mono" style="color: var(--accent-cyan);">₹{{ "%.2f"|format(row.amount_inr) }}</td>
-            <td><span class="badge badge-neutral" style="font-size: 10px;">{{ row.risk_rule }}</span></td>
-            <td class="mono"><span class="badge badge-neutral">{{ row.risk_score }}</span></td>
-            <td><span class="badge badge-diagnosed" style="font-size: 10px;">{{ row.diagnosis }}</span></td>
-            <td><span class="badge badge-proposed" style="font-size: 10px;">{{ row.proposed_action }}</span></td>
+            <td class="mono"><a href="{{ url_for('dashboard.case_detail_view', case_id=c.case_id) }}">#{{ c.case_id }}</a></td>
+            <td class="mono" style="font-weight: 700; color: var(--accent-cyan);">₹{{ "%.2f"|format(c.amount_inr) }}</td>
             <td>
-              {% if row.verification_decision == 'APPROVED' %}
-                <span class="badge badge-approved">APPROVED</span>
-              {% elif row.verification_decision == 'BLOCKED' %}
-                <span class="badge badge-blocked">BLOCKED</span>
+              <span class="mono" style="font-weight: 700; color: var(--accent-amber);">{{ c.risk_score }} / 100</span>
+              <div class="mono" style="font-size: 10px; color: var(--text-dim);">{{ c.risk_rule }}</div>
+            </td>
+            <td class="mono" style="color: #C084FC;">{{ c.diagnosis }}</td>
+            <td class="mono">{{ c.proposed_action }}</td>
+            <td>
+              {% if c.verification_decision == 'APPROVED' %}
+                <span class="badge badge-approved">✓ APPROVED</span>
+              {% elif c.verification_decision == 'BLOCKED' %}
+                <span class="badge badge-blocked">✕ BLOCKED</span>
               {% else %}
-                <span class="mono" style="color: var(--text-dim);">-</span>
+                <span style="color: var(--text-dim); font-size: 11px;">-</span>
               {% endif %}
             </td>
             <td>
-              <span class="badge {% if row.display_status == 'APPROVED' %}badge-approved{% elif row.display_status == 'BLOCKED' %}badge-blocked{% elif row.display_status == 'PROPOSED' %}badge-proposed{% elif row.display_status == 'DIAGNOSED' %}badge-diagnosed{% else %}badge-risk{% endif %}">
-                {{ row.display_status }}
+              <span class="badge {% if c.display_status == 'APPROVED' %}badge-approved{% elif c.display_status == 'BLOCKED' %}badge-blocked{% elif c.display_status == 'PROPOSED' %}badge-proposed{% elif c.display_status == 'DIAGNOSED' %}badge-diagnosed{% else %}badge-risk{% endif %}">
+                {{ c.display_status }}
               </span>
             </td>
-            <td><a href="{{ url_for('dashboard.case_detail_view', case_id=row.case_id) }}">Details &rarr;</a></td>
+            <td class="mono" style="font-size: 11px; color: var(--text-dim);">{{ c.opened_at[:19].replace('T', ' ') if c.opened_at else '-' }}</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   {% else %}
     <div class="empty-state">
-      <div class="empty-title">No recovery cases in database.</div>
-      <div class="empty-sub">Run <code style="color: var(--accent-cyan);">python scripts/seed_demo.py --reset</code> to seed the 9 synthetic demo scenarios.</div>
+      <div class="empty-title">No recovery cases found in database.</div>
+      <div>Run synthetic seeding via <code>python scripts/seed_demo.py --reset</code> to populate demo data.</div>
     </div>
   {% endif %}
 </div>

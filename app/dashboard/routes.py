@@ -14,6 +14,7 @@ from app.dashboard.view_models import (
     get_case_detail,
     get_cases_table_rows,
     get_dev_mode_summary,
+    get_diagnosis_insights_summary,
     get_hero_metrics,
     get_organic_vs_assisted_summary,
     get_pipeline_counts,
@@ -35,6 +36,7 @@ def index():
         cases = get_cases_table_rows(conn)
         organic_summary = get_organic_vs_assisted_summary(conn)
         dev_summary = get_dev_mode_summary(conn)
+        diagnosis_insights = get_diagnosis_insights_summary(conn)
         return render_template(
             "overview.html",
             metrics=metrics,
@@ -42,6 +44,7 @@ def index():
             cases=cases,
             organic_summary=organic_summary,
             dev_summary=dev_summary,
+            diagnosis_insights=diagnosis_insights,
         )
     finally:
         conn.close()

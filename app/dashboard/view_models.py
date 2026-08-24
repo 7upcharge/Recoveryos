@@ -427,3 +427,36 @@ def get_organic_vs_assisted_summary(conn: sqlite3.Connection) -> dict[str, Any]:
         "assisted_count": 0,  # Honesty rule: execution stage not implemented yet
         "assisted_amount": 0.0,
     }
+
+
+def get_diagnosis_insights_summary(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+    """Fetch breakdown of diagnosis categories for the Failure Insights panel.
+
+    Returns:
+        List of dicts containing category name, count, and percentage ratio.
+    """
+    total_diag = conn.execute("SELECT COUNT(*) FROM diagnoses").fetchone()[0] or 0
+    if total_diag == 0:
+        return []
+
+    rows = conn.execute(
+        """
+        SELECT likely_cause, COUNT(*) as count
+        FROM diagnoses
+        GROUP BY likely_cause
+        ORDER BY count DESC
+        """
+    ).fetchall()
+
+    result = []
+    for r in rows:
+        c_name = r["likely_cause"]
+        cnt = r["count"]
+        pct = round((cnt / total_diag) * 100, 1)
+        result.append({
+            "category": c_name,
+            "count": cnt,
+            "pct": pct,
+        })
+    return result
+

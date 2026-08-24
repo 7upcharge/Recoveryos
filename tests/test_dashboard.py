@@ -57,11 +57,11 @@ def test_pipeline_stage_counts(client, seeded_db):
     resp = client.get("/")
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    assert "Stage Pipeline Flow" in html
+    assert "Pipeline Flow" in html
     assert f"{pipeline['payments']}" in html
 
 
-# ── Test 4: Cases Table Renders 11 Columns ─────────────────────────────────────
+# ── Test 4: Cases Table Renders 8 Columns ──────────────────────────────────────
 
 def test_cases_table_renders(client, seeded_db):
     resp = client.get("/cases")
@@ -70,9 +70,8 @@ def test_cases_table_renders(client, seeded_db):
 
     # Check column headers
     headers = [
-        "Case ID", "Amount", "Order ID", "Risk Rule", "Risk Score",
-        "Diagnosis", "Confidence", "Proposed Action", "Verification Decision",
-        "Case Status", "Created Time"
+        "CASE", "AMOUNT", "RISK", "DIAGNOSIS", "PROPOSAL",
+        "VERIFICATION", "STATUS", "TIME"
     ]
     for h in headers:
         assert h in html
@@ -86,14 +85,14 @@ def test_case_detail_page_sections(client, seeded_db):
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
 
-    assert "Payment Overview" in html
+    assert "Payment Entity" in html
     assert "Payment Event Timeline" in html
     assert "Risk Detector Evaluation" in html
-    assert "AI Diagnosis" in html
-    assert "Proposed Action" in html
-    assert "Deterministic Verifier" in html
-    assert "Recovery Result" in html
-    assert "Execution pending" in html
+    assert "AI DIAGNOSIS" in html
+    assert "POLICY-CONSTRAINED PROPOSAL" in html
+    assert "SAFETY VERIFIER" in html
+    assert "RECOVERY RESULT" in html
+    assert "EXECUTION PENDING" in html
 
 
 # ── Test 6: AI Diagnosis vs. Verification Visual Distinction ──────────────────
@@ -104,9 +103,9 @@ def test_ai_diagnosis_vs_verification_distinction(client, seeded_db):
     html = resp.get_data(as_text=True)
 
     # Assert distinguishing visual classes/badges are present
-    assert "AI-generated" in html
+    assert "AI DIAGNOSIS" in html
     assert "badge-ai-attribution" in html
-    assert "Deterministic — not AI" in html
+    assert "SAFETY VERIFIER" in html
     assert "badge-deterministic" in html
 
 
