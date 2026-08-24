@@ -49,3 +49,20 @@ CREATE TABLE IF NOT EXISTS recovery_cases (
     status TEXT NOT NULL DEFAULT 'open',
     closed_at TEXT
 );
+
+-- Day 3: Diagnoses table stored by Gemini Diagnoser.
+CREATE TABLE IF NOT EXISTS diagnoses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    case_id INTEGER NOT NULL REFERENCES recovery_cases(id),
+    diagnosed_at TEXT NOT NULL,
+    likely_cause TEXT NOT NULL,
+    confidence REAL NOT NULL,
+    explanation TEXT NOT NULL,
+    evidence_json TEXT,
+    limitations TEXT,
+    raw_model_output TEXT,
+    model_name TEXT NOT NULL,
+    fallback_used INTEGER NOT NULL DEFAULT 0,
+    fallback_reason TEXT
+);
+

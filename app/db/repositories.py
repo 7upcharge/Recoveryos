@@ -313,3 +313,109 @@ def insert_recovery_case(
     )
     return cursor.lastrowid
 
+
+# ── Day 3: Diagnoses & Case Status Updates ───────────────────────────────────
+
+def get_recovery_case_by_id(
+    conn: sqlite3.Connection,
+    case_id: int,
+) -> dict | None:
+    """Fetch a recovery case by its primary key ID.
+
+    Args:
+        conn: Active database connection.
+        case_id: Recovery case primary key ID.
+
+    Returns:
+        Dict representing recovery_case row if found, or None.
+    """
+    row = conn.execute(
+        "SELECT * FROM recovery_cases WHERE id = ?",
+        (case_id,),
+    ).fetchone()
+    return dict(row) if row else None
+
+
+def get_latest_diagnosis_for_case(
+    conn: sqlite3.Connection,
+    case_id: int,
+) -> dict | None:
+    """Fetch the latest diagnosis entry for a recovery case.
+
+    Args:
+        conn: Active database connection.
+        case_id: Case ID to query.
+
+    Returns:
+        Dict representing diagnosis row if existing, or None.
+    """
+    row = conn.execute(
+        "SELECT * FROM diagnoses WHERE case_id = ? ORDER BY id DESC LIMIT 1",
+        (case_id,),
+    ).fetchone()
+    return dict(row) if row else None
+
+
+def insert_diagnosis(
+    conn: sqlite3.Connection,
+    case_id: int,
+    result: Any,  # DiagnosisResult
+    model_name: str,
+    raw_model_output: str,
+) -> int:
+    """Insert a diagnosis entry into the diagnoses table.
+
+    Args:
+        conn: Active database connection.
+        case_id: Associated recovery_case ID.
+        result: DiagnosisResult dataclass object.
+        model_name: Gemini model name used.
+        raw_model_output: Raw JSON string from model response.
+
+    Returns:
+        The auto-incremented row ID of the inserted diagnosis.
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    cursor = conn.execute(
+        """
+        INSERT INTO diagnoses
+            (case_id, diagnosed_at, likely_cause, confidence, explanation,
+             evidence_json, limitations, raw_model_output, model_name,
+             fallback_used, fallback_reason)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            case_id,
+            now,
+            result.diagnosis,
+            result.confidence,
+            result.explanation,
+            json.dumps(result.evidence),
+            result.limitations,
+            raw_model_output,
+            model_name,
+            1 if result.fallback_used else 0,
+            result.fallback_reason,
+        ),
+    )
+    return cursor.lastrowid
+
+
+def update_case_status(
+    conn: sqlite3.Connection,
+    case_id: int,
+    new_status: str,
+) -> None:
+    """Update the status column of a recovery_cases row.
+
+    Args:
+        conn: Active database connection.
+        case_id: Recovery case ID.
+        new_status: Target status string (e.g. 'diagnosed').
+    """
+    conn.execute(
+        "UPDATE recovery_cases SET status = ? WHERE id = ?",
+        (new_status, case_id),
+    )
+
+
