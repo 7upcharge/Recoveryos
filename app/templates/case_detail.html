@@ -6,79 +6,80 @@
 {% block content %}
 
 <!-- Header Banner -->
-<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 24px; border-radius: 14px;">
-  <div>
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
-      <h1 style="font-size: 28px; font-weight: 900; color: #FFF;">CASE #{{ data.case.id }}</h1>
-      <span class="badge {% if data.display_status == 'APPROVED' %}badge-approved{% elif data.display_status == 'BLOCKED' %}badge-blocked{% elif data.display_status == 'PROPOSED' %}badge-proposed{% elif data.display_status == 'DIAGNOSED' %}badge-diagnosed{% else %}badge-risk{% endif %}" style="font-size: 12px;">
-        {{ data.display_status }}
-      </span>
+<div class="surface-card" style="margin-bottom: 24px;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+        <h1 style="font-size: 26px; font-weight: 700; color: var(--text-primary);">Case #{{ data.case.id }}</h1>
+        <span class="badge {% if data.display_status == 'APPROVED' %}badge-approved{% elif data.display_status == 'BLOCKED' %}badge-blocked{% elif data.display_status == 'PROPOSED' %}badge-proposed{% elif data.display_status == 'DIAGNOSED' %}badge-diagnosed{% else %}badge-risk{% endif %}" style="font-size: 12px;">
+          {{ data.display_status }}
+        </span>
+      </div>
+      <div class="mono" style="font-size: 13px; color: var(--text-dim); display: flex; gap: 16px;">
+        <span>Order: {{ data.payment.order_id or '-' }}</span>
+        <span>•</span>
+        <span>Payment: {{ data.case.payment_id }}</span>
+        <span>•</span>
+        <span>Opened: {{ data.case.opened_at[:19].replace('T', ' ') if data.case.opened_at else '-' }}</span>
+      </div>
     </div>
-    <div class="mono" style="font-size: 13px; color: var(--text-dim); display: flex; gap: 16px;">
-      <span>Order: {{ data.payment.order_id or '-' }}</span>
-      <span>•</span>
-      <span>Payment: {{ data.case.payment_id }}</span>
-      <span>•</span>
-      <span>Opened: {{ data.case.opened_at[:19].replace('T', ' ') if data.case.opened_at else '-' }}</span>
-    </div>
-  </div>
 
-  <div style="text-align: right;">
-    <div class="hero-value" style="color: var(--accent-cyan); font-size: 32px;">
-      ₹{{ "%.2f"|format((data.payment.amount or 0) / 100) }} {{ data.payment.currency or 'INR' }}
-    </div>
-    <div style="margin-top: 6px;">
-      <a href="{{ url_for('dashboard.cases') }}" class="nav-item" style="border: 1px solid var(--border-subtle); font-size: 12px;">&larr; Back to Cases Table</a>
-    </div>
-  </div>
-</div>
-
-<!-- Visual Stage Progression Header -->
-<div class="pipeline-section" style="margin-bottom: 24px; padding: 18px 24px;">
-  <div class="section-title-sm" style="margin-bottom: 12px;">
-    <span>Decision Flow Progression</span>
-    <span style="font-size: 11px; color: var(--text-dim); text-transform: none;">Pipeline Lifecycle Status</span>
-  </div>
-  <div class="pipeline-flow">
-    <div class="pipeline-stage">
-      <div class="pipeline-stage-name" style="color: #FFF;">1. PAYMENT</div>
-      <span class="pipeline-arrow">&rarr;</span>
-    </div>
-    <div class="pipeline-stage">
-      <div class="pipeline-stage-name" style="color: var(--accent-amber);">2. RISK</div>
-      <span class="pipeline-arrow">&rarr;</span>
-    </div>
-    <div class="pipeline-stage {% if not data.diagnosis %}pending{% endif %}">
-      <div class="pipeline-stage-name" style="color: var(--accent-cyan);">3. DIAGNOSIS</div>
-      <span class="pipeline-arrow">&rarr;</span>
-    </div>
-    <div class="pipeline-stage {% if not data.proposal %}pending{% endif %}">
-      <div class="pipeline-stage-name" style="color: var(--accent-violet);">4. PROPOSAL</div>
-      <span class="pipeline-arrow">&rarr;</span>
-    </div>
-    <div class="pipeline-stage {% if not data.verification %}pending{% endif %}">
-      <div class="pipeline-stage-name" style="color: var(--accent-green);">5. VERIFIER</div>
-      <span class="pipeline-arrow">&rarr;</span>
-    </div>
-    <div class="pipeline-stage pending">
-      <div class="pipeline-stage-name" style="color: var(--text-dim);">6. RECOVERY</div>
+    <div style="text-align: right;">
+      <div class="mono" style="color: var(--text-primary); font-size: 28px; font-weight: 700;">
+        ₹{{ "%.2f"|format((data.payment.amount or 0) / 100) }} {{ data.payment.currency or 'INR' }}
+      </div>
+      <div style="margin-top: 6px;">
+        <a href="{{ url_for('dashboard.cases') }}" class="nav-item" style="border: 1px solid var(--border-subtle); font-size: 12px;">&larr; Back to cases</a>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Grid for Section 1 (Payment Overview) & Section 2 (Payment Timeline) -->
-<div class="detail-grid-2">
+<!-- Visual Stage Decision Flow Header -->
+<div class="pipeline-container" style="margin-bottom: 24px; padding: 18px 24px;">
+  <div class="section-header-row" style="margin-bottom: 12px;">
+    <div class="section-title" style="font-size: 13px;">Decision Flow Lifecycle</div>
+  </div>
+  <div class="pipeline-flow-bar">
+    <div class="pipeline-step">
+      <div class="pipeline-step-label" style="font-weight: 700;">1. Payment</div>
+      <span class="pipeline-arrow-divider">&rarr;</span>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-step-label" style="color: var(--accent-amber); font-weight: 700;">2. Risk</div>
+      <span class="pipeline-arrow-divider">&rarr;</span>
+    </div>
+    <div class="pipeline-step {% if not data.diagnosis %}pending{% endif %}">
+      <div class="pipeline-step-label" style="color: var(--accent-blue); font-weight: 700;">3. Diagnosis</div>
+      <span class="pipeline-arrow-divider">&rarr;</span>
+    </div>
+    <div class="pipeline-step {% if not data.proposal %}pending{% endif %}">
+      <div class="pipeline-step-label" style="color: var(--accent-violet); font-weight: 700;">4. Proposal</div>
+      <span class="pipeline-arrow-divider">&rarr;</span>
+    </div>
+    <div class="pipeline-step {% if not data.verification %}pending{% endif %}">
+      <div class="pipeline-step-label" style="color: var(--accent-green); font-weight: 700;">5. Verifier</div>
+      <span class="pipeline-arrow-divider">&rarr;</span>
+    </div>
+    <div class="pipeline-step pending">
+      <div class="pipeline-step-label" style="color: var(--text-light); font-weight: 700;">6. Recovery</div>
+    </div>
+  </div>
+</div>
 
-  <!-- Section 1: PAYMENT -->
-  <div class="section-card">
-    <div class="card-title-row">
-      <span class="card-title-text">1. Payment Entity</span>
+<!-- Section 1 (Payment Entity) & Section 2 (Payment Event Timeline) -->
+<div class="editorial-grid-2">
+
+  <!-- Section 1: PAYMENT ENTITY -->
+  <div class="surface-card">
+    <div class="card-heading-row">
+      <span class="card-title-text">Payment Entity</span>
       <span class="badge badge-neutral">Razorpay Webhook Data</span>
     </div>
 
     <div class="kv-pair">
       <span class="kv-key">Payment Amount</span>
-      <span class="kv-val mono" style="color: var(--accent-cyan); font-size: 16px;">
+      <span class="kv-val mono" style="color: var(--text-primary); font-size: 15px;">
         ₹{{ "%.2f"|format((data.payment.amount or 0) / 100) }} {{ data.payment.currency or 'INR' }}
       </span>
     </div>
@@ -100,28 +101,35 @@
     </div>
   </div>
 
-  <!-- Section 2: PAYMENT TIMELINE -->
-  <div class="section-card">
-    <div class="card-title-row">
-      <span class="card-title-text">2. Payment Event Timeline</span>
-      <span class="mono" style="font-size: 11px; color: var(--text-dim);">Chronological Webhooks</span>
+  <!-- Section 2: PAYMENT EVENT TIMELINE -->
+  <div class="surface-card">
+    <div class="card-heading-row">
+      <span class="card-title-text">Payment Event Timeline</span>
+      <span class="mono" style="font-size: 11px; color: var(--text-dim);">Chronological Webhook Events</span>
     </div>
 
     {% if data.timeline %}
       <div class="timeline-list">
         {% for item in data.timeline %}
-          <div class="timeline-node-item {% if 'failed' in item.event_type %}failed{% elif 'authorized' in item.event_type or 'captured' in item.event_type %}authorized{% endif %}">
-            <div class="timeline-node-dot"></div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span class="mono" style="font-weight: 700; font-size: 13px; color: #FFF;">{{ item.event_type }}</span>
-              <span class="mono" style="font-size: 11px; color: var(--text-dim);">{{ item.timestamp[:19].replace('T', ' ') if item.timestamp else '-' }}</span>
-            </div>
-            <div class="mono" style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">
-              Event ID: {{ item.event_id }} | Payment: {{ item.payment_id }}
+          <div class="timeline-item {% if 'failed' in item.event_type %}failed{% elif 'authorized' in item.event_type or 'captured' in item.event_type %}authorized{% endif %}">
+            <div class="timeline-dot"></div>
+            <div class="timeline-event-box">
+              <div class="timeline-event-header">
+                <span class="timeline-event-title mono">{{ item.event_type }}</span>
+                <span class="timeline-event-time">{{ item.timestamp[:19].replace('T', ' ') if item.timestamp else '-' }}</span>
+              </div>
+              <div class="timeline-event-details">
+                Event: {{ item.event_id }} | Payment: {{ item.payment_id }}
+              </div>
             </div>
           </div>
         {% endfor %}
       </div>
+      {% if data.timeline|length >= 2 %}
+        <div style="font-size: 12px; color: var(--text-dim); margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--border-subtle);">
+          Multiple failure events detected within configured evaluation window.
+        </div>
+      {% endif %}
     {% else %}
       <div class="empty-state" style="padding: 16px;">
         <div class="empty-title">No timeline events found for this payment.</div>
@@ -131,34 +139,34 @@
 
 </div>
 
-<!-- Section 3: RISK DETECTOR -->
-<div class="section-card">
-  <div class="card-title-row">
-    <span class="card-title-text">3. Risk Detector Evaluation</span>
+<!-- Section 3: RISK DETECTOR EVALUATION -->
+<div class="surface-card">
+  <div class="card-heading-row">
+    <span class="card-title-text">Risk Detector Evaluation</span>
     <span class="badge badge-risk">Deterministic risk score</span>
   </div>
 
-  <div class="detail-grid-2" style="margin-bottom: 0;">
+  <div class="editorial-grid-2" style="margin-bottom: 0;">
     <div>
-      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px;">
+      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px;">
         RISK SCORE
       </div>
-      <div class="mono" style="font-size: 32px; font-weight: 900; color: var(--accent-amber);">
+      <div class="mono" style="font-size: 32px; font-weight: 700; color: var(--accent-amber);">
         {{ data.case.risk_score }} / 100
       </div>
-      <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">
-        Deterministic risk score (evaluated directly against R1 — R4 rule thresholds)
+      <div style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">
+        Deterministic risk score evaluated against R1 — R4 rule thresholds.
       </div>
     </div>
 
     <div>
       <div class="kv-pair">
         <span class="kv-key">Rules Fired</span>
-        <span class="kv-val mono" style="font-weight: 700; color: var(--accent-amber);">{{ data.case.risk_rule }}</span>
+        <span class="kv-val mono" style="color: var(--accent-amber);">{{ data.case.risk_rule }}</span>
       </div>
       <div style="margin-top: 8px;">
-        <div style="font-size: 11px; font-weight: 600; color: var(--text-dim); margin-bottom: 4px;">Evaluation Rationale</div>
-        <div style="font-size: 12px; color: var(--text-secondary); background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+        <div style="font-size: 12px; font-weight: 500; color: var(--text-dim); margin-bottom: 4px;">Evaluation Rationale</div>
+        <div style="font-size: 13px; color: var(--text-secondary); background: var(--bg-app); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
           {{ data.case.risk_reason }}
         </div>
       </div>
@@ -167,40 +175,40 @@
 </div>
 
 <!-- Section 4 (AI DIAGNOSIS) & Section 5 (POLICY-CONSTRAINED PROPOSAL) -->
-<div class="detail-grid-2">
+<div class="editorial-grid-2">
 
   <!-- Section 4: AI DIAGNOSIS -->
-  <div class="section-card section-card-ai">
-    <div class="card-title-row">
-      <span class="card-title-text" style="color: #DDD6FE;">4. AI DIAGNOSIS</span>
+  <div class="surface-card section-card-ai">
+    <div class="card-heading-row">
+      <span class="card-title-text">AI DIAGNOSIS</span>
       <span class="badge badge-ai-attribution">AI DIAGNOSIS</span>
     </div>
 
     {% if data.diagnosis %}
       <div class="kv-pair">
         <span class="kv-key">Likely Cause</span>
-        <span class="kv-val mono" style="font-weight: 800; color: #C084FC; font-size: 16px;">{{ data.diagnosis.likely_cause }}</span>
+        <span class="kv-val mono" style="font-size: 15px; color: var(--accent-violet);">{{ data.diagnosis.likely_cause }}</span>
       </div>
       <div class="kv-pair">
         <span class="kv-key">Confidence</span>
-        <span class="kv-val mono" style="color: #DDD6FE;">{{ (data.diagnosis.confidence * 100)|int }}% confidence</span>
+        <span class="kv-val mono">{{ (data.diagnosis.confidence * 100)|int }}% confidence</span>
       </div>
       <div class="kv-pair">
         <span class="kv-key">Model</span>
-        <span class="kv-val mono">{{ data.diagnosis.model_name }}</span>
+        <span class="kv-val mono" style="font-size: 12px;">{{ data.diagnosis.model_name }}</span>
       </div>
 
       <div style="margin-top: 12px;">
-        <div style="font-size: 11px; font-weight: 600; color: var(--text-dim); margin-bottom: 4px;">Explanation</div>
-        <div style="font-size: 12px; color: var(--text-secondary); background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+        <div style="font-size: 12px; font-weight: 500; color: var(--text-dim); margin-bottom: 4px;">Explanation</div>
+        <div style="font-size: 13px; color: var(--text-secondary); background: var(--bg-app); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
           {{ data.diagnosis.explanation }}
         </div>
       </div>
 
       {% if data.diagnosis.evidence %}
         <div style="margin-top: 10px;">
-          <div style="font-size: 11px; font-weight: 600; color: var(--text-dim); margin-bottom: 4px;">Evidence</div>
-          <ul style="font-size: 11px; color: var(--text-secondary); padding-left: 18px;">
+          <div style="font-size: 12px; font-weight: 500; color: var(--text-dim); margin-bottom: 4px;">Evidence</div>
+          <ul style="font-size: 12px; color: var(--text-secondary); padding-left: 18px;">
             {% for ev in data.diagnosis.evidence %}
               <li>{{ ev }}</li>
             {% endfor %}
@@ -215,16 +223,16 @@
   </div>
 
   <!-- Section 5: POLICY-CONSTRAINED PROPOSAL -->
-  <div class="section-card">
-    <div class="card-title-row">
-      <span class="card-title-text">5. POLICY-CONSTRAINED PROPOSAL</span>
+  <div class="surface-card">
+    <div class="card-heading-row">
+      <span class="card-title-text">POLICY-CONSTRAINED PROPOSAL</span>
       <span class="badge badge-proposed">PROPOSED</span>
     </div>
 
     {% if data.proposal %}
       <div class="kv-pair">
         <span class="kv-key">Recommended Action</span>
-        <span class="kv-val mono" style="font-weight: 800; color: #C084FC; font-size: 16px;">{{ data.proposal.proposed_action }}</span>
+        <span class="kv-val mono" style="font-size: 15px; color: var(--accent-violet);">{{ data.proposal.proposed_action }}</span>
       </div>
       <div class="kv-pair">
         <span class="kv-key">Proposal Status</span>
@@ -232,8 +240,8 @@
       </div>
 
       <div style="margin-top: 12px;">
-        <div style="font-size: 11px; font-weight: 600; color: var(--text-dim); margin-bottom: 4px;">Policy Rationale</div>
-        <div style="font-size: 12px; color: var(--text-secondary); background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+        <div style="font-size: 12px; font-weight: 500; color: var(--text-dim); margin-bottom: 4px;">Policy Rationale</div>
+        <div style="font-size: 13px; color: var(--text-secondary); background: var(--bg-app); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
           {{ data.proposal.reason }}
         </div>
       </div>
@@ -247,35 +255,35 @@
 </div>
 
 <!-- Section 6 (SAFETY VERIFIER) & Section 7 (RECOVERY RESULT) -->
-<div class="detail-grid-2">
+<div class="editorial-grid-2">
 
   <!-- Section 6: SAFETY VERIFIER -->
-  <div class="section-card {% if data.verification and data.verification.decision == 'blocked' %}section-card-blocked{% else %}section-card-verifier{% endif %}">
-    <div class="card-title-row">
-      <span class="card-title-text" style="color: #BAE6FD;">6. SAFETY VERIFIER</span>
+  <div class="surface-card {% if data.verification and data.verification.decision == 'blocked' %}section-card-blocked{% else %}section-card-verifier{% endif %}">
+    <div class="card-heading-row">
+      <span class="card-title-text">SAFETY VERIFIER</span>
       <span class="badge badge-deterministic">SAFETY VERIFIER</span>
     </div>
 
     {% if data.verification %}
       <div class="kv-pair">
         <span class="kv-key">Verification Decision</span>
-        <span class="kv-val mono" style="font-weight: 800; font-size: 16px;">
+        <span class="kv-val mono">
           {% if data.verification.decision == 'approved' %}
-            <span class="badge badge-approved" style="font-size: 14px;">✓ APPROVED</span>
+            <span class="badge badge-approved" style="font-size: 13px;">✓ APPROVED</span>
           {% else %}
-            <span class="badge badge-blocked" style="font-size: 14px;">✕ BLOCKED</span>
+            <span class="badge badge-blocked" style="font-size: 13px;">✕ BLOCKED</span>
           {% endif %}
         </span>
       </div>
       <div class="kv-pair">
         <span class="kv-key">Verifier Rationale</span>
-        <span class="kv-val mono" style="font-size: 12px;">{{ data.verification.reason }}</span>
+        <span class="kv-val" style="font-size: 13px; color: var(--text-secondary);">{{ data.verification.reason }}</span>
       </div>
 
       {% if data.verification.policies_checked_list %}
         <div style="margin-top: 10px;">
-          <div style="font-size: 11px; font-weight: 600; color: var(--text-dim); margin-bottom: 4px;">Policies Checked</div>
-          <ul style="font-size: 11px; color: var(--text-secondary); padding-left: 18px;">
+          <div style="font-size: 12px; font-weight: 500; color: var(--text-dim); margin-bottom: 4px;">Policies Checked</div>
+          <ul style="font-size: 12px; color: var(--text-secondary); padding-left: 18px;">
             {% for pol in data.verification.policies_checked_list %}
               <li>{{ pol }}</li>
             {% endfor %}
@@ -290,31 +298,31 @@
   </div>
 
   <!-- Section 7: RECOVERY RESULT -->
-  <div class="section-card">
-    <div class="card-title-row">
-      <span class="card-title-text">7. RECOVERY RESULT</span>
+  <div class="surface-card">
+    <div class="card-heading-row">
+      <span class="card-title-text">RECOVERY RESULT</span>
       <span class="badge badge-neutral">Execution Status</span>
     </div>
 
     <div class="kv-pair">
       <span class="kv-key">Execution Stage</span>
-      <span class="kv-val mono" style="color: var(--text-dim); font-size: 15px;">EXECUTION PENDING</span>
+      <span class="kv-val mono" style="color: var(--text-dim);">EXECUTION PENDING</span>
     </div>
     <div class="kv-pair">
       <span class="kv-key">Recovered Amount</span>
-      <span class="kv-val mono" style="color: var(--text-dim); font-size: 16px; font-weight: 700;">₹0.00</span>
+      <span class="kv-val mono" style="color: var(--text-dim); font-size: 15px; font-weight: 700;">₹0.00</span>
     </div>
     <div class="kv-pair">
       <span class="kv-key">Attribution</span>
-      <span class="kv-val mono" style="font-size: 11px; color: var(--text-dim);">No action executed</span>
+      <span class="kv-val" style="font-size: 12px; color: var(--text-dim);">No action executed</span>
     </div>
   </div>
 
 </div>
 
 <!-- Audit Log Trail Section -->
-<div class="section-card">
-  <div class="card-title-row">
+<div class="surface-card">
+  <div class="card-heading-row">
     <span class="card-title-text">Audit Log Trail</span>
     <span class="mono" style="font-size: 11px; color: var(--text-dim);">Chronological Activity Timeline</span>
   </div>
@@ -335,9 +343,9 @@
             <td class="mono" style="font-size: 11px; color: var(--text-dim);">
               {{ log.timestamp[:19].replace('T', ' ') if log.timestamp else '-' }}
             </td>
-            <td><span class="badge badge-neutral" style="font-size: 9px;">{{ log.stage }}</span></td>
-            <td class="mono" style="font-size: 11px;">{{ log.actor }}</td>
-            <td style="font-size: 12px; color: var(--text-secondary);">{{ log.summary }}</td>
+            <td><span class="badge badge-neutral" style="font-size: 10px;">{{ log.stage }}</span></td>
+            <td class="mono" style="font-size: 12px;">{{ log.actor }}</td>
+            <td style="font-size: 13px; color: var(--text-secondary);">{{ log.summary }}</td>
           </tr>
         {% endfor %}
       </tbody>

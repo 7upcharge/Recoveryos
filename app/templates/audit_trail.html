@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 {% set active_page = 'audit' %}
 
-{% block title %}Audit Trail — RecoveryOS Control Center{% endblock %}
+{% block title %}Audit Trail — RecoveryOS Fintech Revenue Recovery{% endblock %}
 
 {% block content %}
 
-<div class="table-card">
-  <div class="table-header">
+<div class="table-surface">
+  <div class="table-header-row">
     <div>
-      <span class="card-title-text" style="font-size: 18px;">Audit & Activity Trail</span>
-      <span class="mono" style="font-size: 12px; color: var(--text-dim); margin-left: 12px;">Chronological Event History</span>
+      <div class="card-title-text" style="font-size: 18px; font-weight: 700;">Audit & Activity Trail</div>
+      <div style="font-size: 12px; color: var(--text-dim); margin-top: 2px;">
+        Chronological event audit trail for RecoveryOS risk evaluation and decision pipeline
+      </div>
     </div>
   </div>
 
@@ -37,12 +39,12 @@
               {% if log.case_id %}
                 <a href="{{ url_for('dashboard.case_detail_view', case_id=log.case_id) }}">#{{ log.case_id }}</a>
               {% else %}
-                <span style="color: var(--text-dim);">-</span>
+                <span style="color: var(--text-light);">-</span>
               {% endif %}
             </td>
             <td><span class="badge badge-neutral" style="font-size: 10px;">{{ log.stage }}</span></td>
             <td class="mono" style="font-size: 11px;">{{ log.actor }}</td>
-            <td style="font-size: 12px;">{{ log.summary }}</td>
+            <td style="font-size: 13px; color: var(--text-secondary);">{{ log.summary }}</td>
             <td class="mono" style="font-size: 10px; color: var(--text-dim); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
               {{ log.detail_json if log.detail_json else '-' }}
             </td>
@@ -53,7 +55,7 @@
   {% else %}
     <div class="empty-state">
       <div class="empty-title">No audit trail entries in database.</div>
-      <div class="empty-sub">Run <code style="color: var(--accent-cyan);">python scripts/seed_demo.py --reset</code> to generate pipeline audit events.</div>
+      <div class="empty-sub">Run <code>python scripts/seed_demo.py --reset</code> to generate pipeline audit events.</div>
     </div>
   {% endif %}
 </div>

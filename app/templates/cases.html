@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% set active_page = 'cases' %}
 
-{% block title %}Cases — RecoveryOS Revenue Recovery Intelligence{% endblock %}
+{% block title %}Cases — RecoveryOS Fintech Revenue Recovery{% endblock %}
 
 {% block content %}
 
-<div class="table-card">
-  <div class="table-header">
+<div class="table-surface">
+  <div class="table-header-row">
     <div>
-      <h1 class="card-title-text" style="font-size: 20px;">Recovery Cases</h1>
-      <div style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">
-        Active and historical revenue risk cases evaluated by RecoveryOS
+      <div class="card-title-text" style="font-size: 18px; font-weight: 700;">Recovery Cases</div>
+      <div style="font-size: 12px; color: var(--text-dim); margin-top: 2px;">
+        Active and historical payment risk cases evaluated by RecoveryOS
       </div>
     </div>
     <div>
@@ -35,23 +35,23 @@
       <tbody>
         {% for c in cases %}
           <tr>
-            <td class="mono" style="font-weight: 700;">
+            <td class="mono" style="font-weight: 600;">
               <a href="{{ url_for('dashboard.case_detail_view', case_id=c.case_id) }}">#{{ c.case_id }}</a>
             </td>
-            <td class="mono" style="font-weight: 700; color: var(--accent-cyan);">
+            <td class="mono" style="font-weight: 600; color: var(--text-primary);">
               ₹{{ "%.2f"|format(c.amount_inr) }} {{ c.currency }}
             </td>
             <td>
-              <span class="mono" style="font-weight: 700; color: var(--accent-amber);">{{ c.risk_score }} / 100</span>
+              <span class="mono" style="font-weight: 600; color: var(--accent-amber);">{{ c.risk_score }} / 100</span>
               <div class="mono" style="font-size: 10px; color: var(--text-dim);">{{ c.risk_rule }}</div>
             </td>
-            <td class="mono" style="color: #C084FC; font-weight: 600;">
-              {{ c.diagnosis }}
+            <td>
+              <span style="font-weight: 500; color: var(--text-primary);">{{ c.diagnosis }}</span>
               {% if c.confidence %}
-                <span style="font-size: 10px; color: var(--text-dim); font-weight: normal;">({{ (c.confidence * 100)|int }}%)</span>
+                <span class="mono" style="font-size: 11px; color: var(--text-dim);">({{ (c.confidence * 100)|int }}%)</span>
               {% endif %}
             </td>
-            <td class="mono" style="font-weight: 600;">
+            <td style="font-weight: 500;">
               {{ c.proposed_action }}
             </td>
             <td>
@@ -60,7 +60,7 @@
               {% elif c.verification_decision == 'BLOCKED' %}
                 <span class="badge badge-blocked">✕ BLOCKED</span>
               {% else %}
-                <span style="color: var(--text-dim); font-size: 11px;">-</span>
+                <span style="color: var(--text-light); font-size: 11px;">-</span>
               {% endif %}
             </td>
             <td>
@@ -78,7 +78,7 @@
   {% else %}
     <div class="empty-state">
       <div class="empty-title">No recovery cases found.</div>
-      <div>Run synthetic seeding via <code>python scripts/seed_demo.py --reset</code> to populate demo data.</div>
+      <div class="empty-sub">Run synthetic seeding via <code>python scripts/seed_demo.py --reset</code> to populate demo data.</div>
     </div>
   {% endif %}
 </div>
